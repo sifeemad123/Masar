@@ -46,7 +46,7 @@ class NotificationsService {
 
     await plugin.zonedSchedule(
       id: id,
-      title: 'خلصت الي عليك ياعجل؟',
+      title: 'خلصت التاسك؟',
       body: taskName,
       scheduledDate: scheduledDate,
       notificationDetails: const NotificationDetails(
