@@ -71,11 +71,6 @@ Visit the **[Masar Download Website](https://sifeemad123.github.io/Masar/)** to 
    ```bash
    flutter run
    ```
-
-## Repository
-
-[View Masar on GitHub](https://github.com/sifeemad123/Masar)
-
 ---
 
 Made by **Saif Emad**.
