@@ -19,19 +19,22 @@ class TasksModelAdapter extends TypeAdapter<TasksModel> {
     return TasksModel()
       ..taskName = fields[0] as String
       ..completed = fields[1] as bool
-      ..taskDate = fields[2] as DateTime;
+      ..taskDate = fields[2] as DateTime
+      ..startDate = fields[3] as DateTime;
   }
 
   @override
   void write(BinaryWriter writer, TasksModel obj) {
     writer
-      ..writeByte(3)
+      ..writeByte(4)
       ..writeByte(0)
       ..write(obj.taskName)
       ..writeByte(1)
       ..write(obj.completed)
       ..writeByte(2)
-      ..write(obj.taskDate);
+      ..write(obj.taskDate)
+      ..writeByte(3)
+      ..write(obj.startDate);
   }
 
   @override

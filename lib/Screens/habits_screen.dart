@@ -127,9 +127,6 @@ class _HabitsScreenState extends State<HabitsScreen> {
     );
   }
 
-
-
-
   void _editHabit(int index) {
     final habait = Provider.of<HabitsProvider>(
       context,
@@ -140,6 +137,13 @@ class _HabitsScreenState extends State<HabitsScreen> {
     final habitDescriptionController = TextEditingController(text: habait.habitDescription);
 
     final formKey = GlobalKey<FormState>();
+    TimeOfDay? selectedAlarmTime =
+    habait.alarmHour != null && habait.alarmMinute != null
+        ? TimeOfDay(
+      hour: habait.alarmHour!,
+      minute: habait.alarmMinute!,
+    )
+        : null;
 
 
     showModalBottomSheet(
@@ -299,28 +303,83 @@ class _HabitsScreenState extends State<HabitsScreen> {
                             ),
                           ),
                         ),
+
+
+                        StatefulBuilder(
+                          builder: (context, setAlarmState) {
+                            return ListTile(
+                              contentPadding: EdgeInsets.zero,
+                              leading: Icon(
+                                Icons.alarm,
+                                color: AppColors.textSecondary,
+                              ),
+                              title: Text(
+                                'وقت المنبّه',
+                                style: TextStyle(color: AppColors.textSecondary),
+                              ),
+                              subtitle: Text(
+                                selectedAlarmTime == null
+                                    ? 'بدون منبّه'
+                                    : selectedAlarmTime!.format(context),
+                                style: TextStyle(color: AppColors.textPrimary),
+                              ),
+                              trailing: IconButton(
+                                icon: const Icon(Icons.access_time),
+                                onPressed: () async {
+                                  final picked = await showTimePicker(
+                                    context: context,
+                                    initialTime: selectedAlarmTime ?? TimeOfDay.now(),
+                                  );
+
+                                  if (picked != null) {
+                                    setAlarmState(() {
+                                      selectedAlarmTime = picked;
+                                    });
+                                  }
+                                },
+                              ),
+                            );
+                          },
+                        ),
+
                         SizedBox(height: 20,),
                         // Update Button
                         Button(
                           text: "تعديل",
-                          onPressed: () {
-                            final isFormValid = formKey.currentState!
-                                .validate();
 
-                            if (!isFormValid) {
+                          onPressed: () async {
+                            if (!formKey.currentState!.validate()) {
                               return;
                             }
 
-                            Provider.of<HabitsProvider>(
+                            final provider = Provider.of<HabitsProvider>(
                               context,
                               listen: false,
-                            ).editHabit(habitName: habitNameController.text.trim(), habitDescription: habitDescriptionController.text.trim(), index: index);
+                            );
+
+                            provider.editHabit(
+                              habitName: habitNameController.text.trim(),
+                              habitDescription: habitDescriptionController.text.trim(),
+                              index: index,
+                            );
+
+                            if (selectedAlarmTime != null) {
+                              await provider.setHabitAlarm(
+                                index: index,
+                                hour: selectedAlarmTime!.hour,
+                                minute: selectedAlarmTime!.minute,
+                              );
+                            } else {
+                              await provider.removeHabitAlarm(index: index);
+                            }
+
+                            if (!context.mounted) return;
 
                             Navigator.pop(context);
 
                             Dialogs.success(
                               context: context,
-                              message: "تم تعديل العاده بنجاح",
+                              message: "تم تعديل العادة بنجاح",
                             );
                           },
                         ),
@@ -335,9 +394,6 @@ class _HabitsScreenState extends State<HabitsScreen> {
       },
     );
   }
-
-
-
 
   @override
   Widget build(BuildContext context) {

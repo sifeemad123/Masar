@@ -21,13 +21,15 @@ class HabitsModelAdapter extends TypeAdapter<HabitsModel> {
       ..habitDescription = fields[1] as String
       ..habitCompleted = fields[2] as bool
       ..streakCount = fields[3] as int
-      ..lastCompletedDate = fields[4] as DateTime?;
+      ..lastCompletedDate = fields[4] as DateTime?
+      ..alarmHour = fields[5] as int?
+      ..alarmMinute = fields[6] as int?;
   }
 
   @override
   void write(BinaryWriter writer, HabitsModel obj) {
     writer
-      ..writeByte(5)
+      ..writeByte(7)
       ..writeByte(0)
       ..write(obj.habitName)
       ..writeByte(1)
@@ -37,7 +39,11 @@ class HabitsModelAdapter extends TypeAdapter<HabitsModel> {
       ..writeByte(3)
       ..write(obj.streakCount)
       ..writeByte(4)
-      ..write(obj.lastCompletedDate);
+      ..write(obj.lastCompletedDate)
+      ..writeByte(5)
+      ..write(obj.alarmHour)
+      ..writeByte(6)
+      ..write(obj.alarmMinute);
   }
 
   @override

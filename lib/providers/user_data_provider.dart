@@ -18,33 +18,51 @@ class UserDataProvider extends ChangeNotifier {
     return tasksBox().values.toList();
   }
 
-  // ============================================================
-  // ADD TASK
-  // ============================================================
+
+  Future<void> _scheduleTaskNotifications({
+    required int taskKey,
+    required String taskName,
+    required DateTime taskDate,
+    required DateTime startDate,
+  }) async {
+    final service = NotificationsService();
+
+    await service.deadLineScheduleTaskNotification(
+      taskKey: taskKey,
+      taskName: taskName,
+      taskDate: taskDate,
+    );
+
+    await service.startDateScheduleTaskNotification(
+      taskKey: taskKey,
+      taskName: taskName,
+      startDate: startDate,
+    );
+  }
 
   Future<void> addNewTask({
     required String taskName,
     required DateTime taskDate,
+    required DateTime startDate,
   }) async {
     final task = TasksModel()
       ..taskName = taskName
       ..completed = false
-      ..taskDate = taskDate;
+      ..taskDate = taskDate
+      ..startDate = startDate;
 
     final taskKey = await tasksBox().add(task);
 
-    await NotificationsService().scheduleTaskNotification(
-      id: taskKey,
+    await _scheduleTaskNotifications(
+      taskKey: taskKey,
       taskName: taskName,
       taskDate: taskDate,
+      startDate: startDate,
     );
 
     notifyListeners();
   }
 
-  // ============================================================
-  // DELETE TASK
-  // ============================================================
 
   Future<void> deleteTask({
     required TasksModel task,
@@ -60,9 +78,6 @@ class UserDataProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ============================================================
-  // TOGGLE TASK
-  // ============================================================
 
   Future<void> toggleTask({
     required TasksModel task,
@@ -79,10 +94,11 @@ class UserDataProvider extends ChangeNotifier {
           taskKey,
         );
       } else {
-        await NotificationsService().scheduleTaskNotification(
-          id: taskKey,
+        await _scheduleTaskNotifications(
+          taskKey: taskKey,
           taskName: task.taskName,
           taskDate: task.taskDate,
+          startDate: task.startDate,
         );
       }
     }
@@ -90,15 +106,12 @@ class UserDataProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ============================================================
-  // UPDATE TASK
-  // ============================================================
-
   Future<void> updateTask(
       TasksModel task,
       String taskName,
-      DateTime taskDate,
-      ) async {
+      DateTime taskDate, {
+        required DateTime startDate,
+      }) async {
     final taskKey = task.key;
 
     if (taskKey is int) {
@@ -109,23 +122,22 @@ class UserDataProvider extends ChangeNotifier {
 
     task.taskName = taskName;
     task.taskDate = taskDate;
+    task.startDate = startDate;
 
     await task.save();
 
     if (!task.completed && taskKey is int) {
-      await NotificationsService().scheduleTaskNotification(
-        id: taskKey,
+      await _scheduleTaskNotifications(
+        taskKey: taskKey,
         taskName: taskName,
         taskDate: taskDate,
+        startDate: startDate,
       );
     }
 
     notifyListeners();
   }
 
-  // ============================================================
-  // DELETE COMPLETED EXPIRED TASKS
-  // ============================================================
 
   Future<void> deleteCompletedExpiredTasks() async {
     final now = DateTime.now();
@@ -159,9 +171,6 @@ class UserDataProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ============================================================
-  // USER NAME
-  // ============================================================
 
   Future<void> getUserName() async {
     final pref = await SharedPreferences.getInstance();
@@ -170,10 +179,6 @@ class UserDataProvider extends ChangeNotifier {
 
     notifyListeners();
   }
-
-  // ============================================================
-  // EDIT USER NAME
-  // ============================================================
 
   Future<void> editUserName({
     required String userName,
@@ -201,14 +206,13 @@ class UserDataProvider extends ChangeNotifier {
   // ============================================================
 
   Future<void> deleteAllData() async {
-   await NotificationsService().cancelAllNotifications();
+    await NotificationsService().cancelAllNotifications();
     await Hive.deleteBoxFromDisk('tasksBox');
     await Hive.deleteBoxFromDisk('lessonsBox');
     await Hive.deleteBoxFromDisk('subjectsBox');
     await Hive.deleteBoxFromDisk('habitsBox');
     await Hive.deleteBoxFromDisk('notesBox');
     final pref = await SharedPreferences.getInstance();
-
     await pref.clear();
 
     notifyListeners();

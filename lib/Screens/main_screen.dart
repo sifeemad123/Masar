@@ -42,7 +42,8 @@ class _MainScreenState extends State<MainScreen> {
   void createNewTask() {
     final taskNameController = TextEditingController();
     final formKey = GlobalKey<FormState>();
-    DateTime? selectedDateTime;
+    DateTime? endDate;
+    DateTime? startDate;
 
     showModalBottomSheet(
       isScrollControlled: true,
@@ -161,8 +162,20 @@ class _MainScreenState extends State<MainScreen> {
                         const SizedBox(height: 30),
 
                         // =========================
-                        // Date & Time
+                        // DeadLine
                         // =========================
+                        Row(
+                          children: [
+                            Text(
+                              "وقت البدايه",
+                              style: TextStyle(
+                                color: AppColors.textSecondary,
+                                fontSize: 20,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 15),
                         Row(
                           children: [
                             // =========================
@@ -174,10 +187,10 @@ class _MainScreenState extends State<MainScreen> {
                                   final TimeOfDay?
                                   pickedTime = await showTimePicker(
                                     context: context,
-                                    initialTime: selectedDateTime != null
+                                    initialTime: startDate != null
                                         ? TimeOfDay.fromDateTime(
-                                            selectedDateTime!,
-                                          )
+                                      startDate!,
+                                    )
                                         : TimeOfDay.now(),
                                     builder: (context, child) {
                                       return Theme(
@@ -197,9 +210,9 @@ class _MainScreenState extends State<MainScreen> {
                                   if (pickedTime != null) {
                                     setModalState(() {
                                       final currentDate =
-                                          selectedDateTime ?? DateTime.now();
+                                          startDate ?? DateTime.now();
 
-                                      selectedDateTime = DateTime(
+                                      startDate = DateTime(
                                         currentDate.year,
                                         currentDate.month,
                                         currentDate.day,
@@ -226,13 +239,14 @@ class _MainScreenState extends State<MainScreen> {
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       Text(
-                                        selectedDateTime == null
+                                        startDate == null
                                             ? "إضافة وقت"
                                             : TimeOfDay.fromDateTime(
-                                                selectedDateTime!,
-                                              ).format(context),
+                                          startDate!,
+                                        ).format(context),
                                         style: TextStyle(
                                           color: AppColors.textPrimary,
+                                          fontFamily: 'Tajawal',
                                           fontSize: 14,
                                         ),
                                       ),
@@ -264,7 +278,7 @@ class _MainScreenState extends State<MainScreen> {
                                     firstDate: DateTime.now(),
                                     lastDate: DateTime(2100),
                                     initialDate:
-                                        selectedDateTime ?? DateTime.now(),
+                                    startDate ?? DateTime.now(),
                                     builder: (context, child) {
                                       return Theme(
                                         data: Theme.of(context).copyWith(
@@ -283,9 +297,9 @@ class _MainScreenState extends State<MainScreen> {
                                   if (pickedDate != null) {
                                     setModalState(() {
                                       final currentDate =
-                                          selectedDateTime ?? DateTime.now();
+                                          startDate ?? DateTime.now();
 
-                                      selectedDateTime = DateTime(
+                                      startDate = DateTime(
                                         pickedDate.year,
                                         pickedDate.month,
                                         pickedDate.day,
@@ -312,11 +326,206 @@ class _MainScreenState extends State<MainScreen> {
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       Text(
-                                        selectedDateTime == null
+                                        startDate == null
                                             ? "إضافة تاريخ"
-                                            : "${selectedDateTime!.day} / "
-                                                  "${selectedDateTime!.month} / "
-                                                  "${selectedDateTime!.year}",
+                                            : "${startDate!.day} / "
+                                            "${startDate!.month} / "
+                                            "${startDate!.year}",
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          color: AppColors.textPrimary,
+                                          fontFamily: 'Tajawal',
+                                          fontSize: 14,
+                                        ),
+                                      ),
+
+                                      const SizedBox(width: 8),
+
+                                      Icon(
+                                        Icons.calendar_today_outlined,
+                                        color: AppColors.textSecondary,
+                                        size: 18,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        const SizedBox(height: 20),
+
+                        // =========================
+                        // DeadLine
+                        // =========================
+                        Row(
+                          children: [
+                            Text(
+                              "الـ DeadLine ",
+                              style: TextStyle(
+                                color: AppColors.textSecondary,
+                                fontSize: 20,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 15),
+                        Row(
+                          children: [
+                            // =========================
+                            // Time Button
+                            // =========================
+                            Expanded(
+                              child: InkWell(
+                                onTap: () async {
+                                  final TimeOfDay?
+                                  pickedTime = await showTimePicker(
+                                    context: context,
+                                    initialTime: endDate != null
+                                        ? TimeOfDay.fromDateTime(
+                                      endDate!,
+                                          )
+                                        : TimeOfDay.now(),
+                                    builder: (context, child) {
+                                      return Theme(
+                                        data: Theme.of(context).copyWith(
+                                          colorScheme: const ColorScheme.light(
+                                            primary: AppColors.textPrimary,
+                                            onPrimary: AppColors.surfaceAlt,
+                                            surface: AppColors.surface,
+                                            onSurface: AppColors.textSecondary,
+                                          ),
+                                        ),
+                                        child: child!,
+                                      );
+                                    },
+                                  );
+
+                                  if (pickedTime != null) {
+                                    setModalState(() {
+                                      final currentDate =
+                                          endDate ?? DateTime.now();
+
+                                      endDate = DateTime(
+                                        currentDate.year,
+                                        currentDate.month,
+                                        currentDate.day,
+                                        pickedTime.hour,
+                                        pickedTime.minute,
+                                      );
+                                    });
+                                  }
+                                },
+
+                                borderRadius: BorderRadius.circular(12),
+
+                                child: Container(
+                                  height: 60,
+                                  decoration: BoxDecoration(
+                                    border: Border.all(
+                                      color: AppColors.border,
+                                      width: 1,
+                                    ),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        endDate == null
+                                            ? "إضافة وقت"
+                                            : TimeOfDay.fromDateTime(
+                                          endDate!,
+                                              ).format(context),
+                                        style: TextStyle(
+                                          color: AppColors.textPrimary,
+                                          fontFamily: 'Tajawal',
+                                          fontSize: 14,
+                                        ),
+                                      ),
+
+                                      const SizedBox(width: 8),
+
+                                      Icon(
+                                        Icons.access_time_outlined,
+                                        color: AppColors.textSecondary,
+                                        size: 18,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+
+                            const SizedBox(width: 10),
+
+                            // =========================
+                            // Date Button
+                            // =========================
+                            Expanded(
+                              child: InkWell(
+                                onTap: () async {
+                                  final DateTime?
+                                  pickedDate = await showDatePicker(
+                                    context: context,
+                                    firstDate: DateTime.now(),
+                                    lastDate: DateTime(2100),
+                                    initialDate:
+                                    endDate ?? DateTime.now(),
+                                    builder: (context, child) {
+                                      return Theme(
+                                        data: Theme.of(context).copyWith(
+                                          colorScheme: const ColorScheme.light(
+                                            primary: AppColors.textPrimary,
+                                            onPrimary: AppColors.surfaceAlt,
+                                            surface: AppColors.surface,
+                                            onSurface: AppColors.textSecondary,
+                                          ),
+                                        ),
+                                        child: child!,
+                                      );
+                                    },
+                                  );
+
+                                  if (pickedDate != null) {
+                                    setModalState(() {
+                                      final currentDate =
+                                          endDate ?? DateTime.now();
+
+                                      endDate = DateTime(
+                                        pickedDate.year,
+                                        pickedDate.month,
+                                        pickedDate.day,
+                                        currentDate.hour,
+                                        currentDate.minute,
+                                      );
+                                    });
+                                  }
+                                },
+
+                                borderRadius: BorderRadius.circular(12),
+
+                                child: Container(
+                                  height: 60,
+                                  decoration: BoxDecoration(
+                                    border: Border.all(
+                                      color: AppColors.border,
+                                      width: 1,
+                                    ),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        endDate == null
+                                            ? "إضافة تاريخ"
+                                            : "${endDate!.day} / "
+                                                  "${endDate!.month} / "
+                                                  "${endDate!.year}",
                                         textAlign: TextAlign.center,
                                         style: TextStyle(
                                           color: AppColors.textPrimary,
@@ -351,12 +560,13 @@ class _MainScreenState extends State<MainScreen> {
                             final isFormValid = formKey.currentState!
                                 .validate();
 
-                            final isDateTimeSelected = selectedDateTime != null;
+                            final isStartDateSelected = startDate != null;
+                            final isEndDateSelected = startDate != null;
 
                             // =========================
                             // Validation
                             // =========================
-                            if (!isFormValid || !isDateTimeSelected) {
+                            if (!isFormValid || !isStartDateSelected || !isEndDateSelected) {
                               Dialogs.failed(
                                 context: context,
                                 message: "يرجى إدخال جميع البيانات المطلوبة",
@@ -372,7 +582,8 @@ class _MainScreenState extends State<MainScreen> {
                               listen: false,
                             ).addNewTask(
                               taskName: taskNameController.text.trim(),
-                              taskDate: selectedDateTime!,
+                              taskDate: endDate!,
+                              startDate: startDate!
                             );
 
                             // Close Bottom Sheet
@@ -399,6 +610,7 @@ class _MainScreenState extends State<MainScreen> {
     final habitNameController = TextEditingController();
     final habitDescriptionController = TextEditingController();
     final formKey = GlobalKey<FormState>();
+    TimeOfDay? selectedAlarmTime;
 
     showModalBottomSheet(
       isScrollControlled: true,
@@ -570,13 +782,52 @@ class _MainScreenState extends State<MainScreen> {
                             ),
                           ),
                         ),
+
+
+                        StatefulBuilder(
+                          builder: (context, setAlarmState) {
+                            return ListTile(
+                              contentPadding: EdgeInsets.zero,
+                              leading: Icon(
+                                Icons.alarm,
+                                color: AppColors.textSecondary,
+                              ),
+                              title: Text(
+                                'وقت المنبّه',
+                                style: TextStyle(color: AppColors.textSecondary),
+                              ),
+                              subtitle: Text(
+                                selectedAlarmTime == null
+                                    ? 'بدون منبّه'
+                                    : selectedAlarmTime!.format(context),
+                                style: TextStyle(color: AppColors.textPrimary),
+                              ),
+                              trailing: IconButton(
+                                icon: const Icon(Icons.access_time),
+                                onPressed: () async {
+                                  final picked = await showTimePicker(
+                                    context: context,
+                                    initialTime: selectedAlarmTime ?? TimeOfDay.now(),
+                                  );
+
+                                  if (picked != null) {
+                                    setAlarmState(() {
+                                      selectedAlarmTime = picked;
+                                    });
+                                  }
+                                },
+                              ),
+                            );
+                          },
+                        ),
+
                         const SizedBox(height: 20),
                         // =========================
                         // Save Button
                         // =========================
                         Button(
                           text: "حفظ",
-                          onPressed: () {
+                          onPressed: () async {
                             if (!formKey.currentState!.validate()) {
                               Dialogs.failed(
                                 context: context,
@@ -584,22 +835,34 @@ class _MainScreenState extends State<MainScreen> {
                               );
                               return;
                             }
-                            // =========================
-                            // Add Task
-                            // =========================
-                            Provider.of<HabitsProvider>(
+
+                            final provider = Provider.of<HabitsProvider>(
                               context,
                               listen: false,
-                            ).addHabit(
-                              habitName: habitNameController.text.trim(),
-                              habitDescription: habitDescriptionController.text
-                                  .trim(),
                             );
-                            // Close Bottom Sheet
+
+                            provider.addHabit(
+                              habitName: habitNameController.text.trim(),
+                              habitDescription: habitDescriptionController.text.trim(),
+                            );
+
+                            if (selectedAlarmTime != null) {
+                              final newIndex = provider.habits.length - 1;
+
+                              await provider.setHabitAlarm(
+                                index: newIndex,
+                                hour: selectedAlarmTime!.hour,
+                                minute: selectedAlarmTime!.minute,
+                              );
+                            }
+
+                            if (!context.mounted) return;
+
                             Navigator.pop(context);
+
                             Dialogs.success(
                               context: context,
-                              message: "تمت إضافة العاده بنجاح",
+                              message: "تمت إضافة العادة بنجاح",
                             );
                           },
                         ),

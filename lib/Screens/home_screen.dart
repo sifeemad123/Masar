@@ -44,17 +44,14 @@ class _HomeScreenState extends State<HomeScreen> {
     context.read<UserDataProvider>().getUserName();
   }
 
-  void _editTask(int index) {
-    final task = Provider.of<UserDataProvider>(
-      context,
-      listen: false,
-    ).tasks[index];
+  void _editTask(TasksModel task) {
 
     final taskNameController = TextEditingController(text: task.taskName);
 
     final formKey = GlobalKey<FormState>();
 
-    DateTime selectedDateTime = task.taskDate;
+    DateTime endDate = task.taskDate;
+    DateTime startDate = task.startDate;
 
     showModalBottomSheet(
       isScrollControlled: true,
@@ -108,7 +105,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
                         const SizedBox(height: 30),
 
-                        // Task Name
                         Row(
                           children: [
                             Text(
@@ -130,7 +126,6 @@ class _HomeScreenState extends State<HomeScreen> {
                             if (value == null || value.trim().isEmpty) {
                               return "يرجى إدخال اسم المهمة";
                             }
-
                             return null;
                           },
                           decoration: InputDecoration(
@@ -161,8 +156,20 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ),
 
+
                         const SizedBox(height: 30),
 
+                        Row(
+                          children: [
+                            Text(
+                              "وقت البدايه",
+                              style: TextStyle(
+                                color: AppColors.textSecondary,
+                                fontSize: 20,
+                              ),
+                            ),
+                          ],
+                        ),
                         // Date & Time
                         Row(
                           children: [
@@ -174,7 +181,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   pickedTime = await showTimePicker(
                                     context: context,
                                     initialTime: TimeOfDay.fromDateTime(
-                                      selectedDateTime,
+                                      startDate,
                                     ),
                                     builder: (context, child) {
                                       return Theme(
@@ -193,10 +200,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
                                   if (pickedTime != null) {
                                     setModalState(() {
-                                      selectedDateTime = DateTime(
-                                        selectedDateTime.year,
-                                        selectedDateTime.month,
-                                        selectedDateTime.day,
+                                      startDate = DateTime(
+                                        startDate.year,
+                                        startDate.month,
+                                        startDate.day,
                                         pickedTime.hour,
                                         pickedTime.minute,
                                       );
@@ -215,7 +222,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     children: [
                                       Text(
                                         TimeOfDay.fromDateTime(
-                                          selectedDateTime,
+                                          startDate,
                                         ).format(context),
                                         style: TextStyle(
                                           color: AppColors.textPrimary,
@@ -245,7 +252,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     context: context,
                                     firstDate: DateTime.now(),
                                     lastDate: DateTime(2100),
-                                    initialDate: selectedDateTime,
+                                    initialDate: startDate,
                                     builder: (context, child) {
                                       return Theme(
                                         data: Theme.of(context).copyWith(
@@ -263,12 +270,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
                                   if (pickedDate != null) {
                                     setModalState(() {
-                                      selectedDateTime = DateTime(
+                                      startDate = DateTime(
                                         pickedDate.year,
                                         pickedDate.month,
                                         pickedDate.day,
-                                        selectedDateTime.hour,
-                                        selectedDateTime.minute,
+                                        startDate.hour,
+                                        startDate.minute,
                                       );
                                     });
                                   }
@@ -284,9 +291,166 @@ class _HomeScreenState extends State<HomeScreen> {
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       Text(
-                                        "${selectedDateTime.day} / "
-                                        "${selectedDateTime.month} / "
-                                        "${selectedDateTime.year}",
+                                        "${startDate.day} / "
+                                            "${startDate.month} / "
+                                            "${startDate.year}",
+                                        style: TextStyle(
+                                          color: AppColors.textPrimary,
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Icon(
+                                        Icons.calendar_today_outlined,
+                                        color: AppColors.textSecondary,
+                                        size: 18,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+
+
+                        const SizedBox(height: 30),
+
+                        Row(
+                          children: [
+                            Text(
+                              " الـ DeadLine",
+                              style: TextStyle(
+                                color: AppColors.textSecondary,
+                                fontSize: 20,
+                              ),
+                            ),
+                          ],
+                        ),
+                        // Date & Time
+                        Row(
+                          children: [
+                            // Time
+                            Expanded(
+                              child: InkWell(
+                                onTap: () async {
+                                  final TimeOfDay?
+                                  pickedTime = await showTimePicker(
+                                    context: context,
+                                    initialTime: TimeOfDay.fromDateTime(
+                                      endDate,
+                                    ),
+                                    builder: (context, child) {
+                                      return Theme(
+                                        data: Theme.of(context).copyWith(
+                                          colorScheme: const ColorScheme.light(
+                                            primary: AppColors.textPrimary,
+                                            onPrimary: AppColors.surfaceAlt,
+                                            surface: AppColors.surface,
+                                            onSurface: AppColors.textSecondary,
+                                          ),
+                                        ),
+                                        child: child!,
+                                      );
+                                    },
+                                  );
+
+                                  if (pickedTime != null) {
+                                    setModalState(() {
+                                      endDate = DateTime(
+                                        endDate.year,
+                                        endDate.month,
+                                        endDate.day,
+                                        pickedTime.hour,
+                                        pickedTime.minute,
+                                      );
+                                    });
+                                  }
+                                },
+                                borderRadius: BorderRadius.circular(12),
+                                child: Container(
+                                  height: 60,
+                                  decoration: BoxDecoration(
+                                    border: Border.all(color: AppColors.border),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        TimeOfDay.fromDateTime(
+                                          endDate,
+                                        ).format(context),
+                                        style: TextStyle(
+                                          color: AppColors.textPrimary,
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Icon(
+                                        Icons.access_time_outlined,
+                                        color: AppColors.textSecondary,
+                                        size: 18,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+
+                            const SizedBox(width: 10),
+
+                            // Date
+                            Expanded(
+                              child: InkWell(
+                                onTap: () async {
+                                  final DateTime?
+                                  pickedDate = await showDatePicker(
+                                    context: context,
+                                    firstDate: DateTime.now(),
+                                    lastDate: DateTime(2100),
+                                    initialDate: endDate,
+                                    builder: (context, child) {
+                                      return Theme(
+                                        data: Theme.of(context).copyWith(
+                                          colorScheme: const ColorScheme.light(
+                                            primary: AppColors.textPrimary,
+                                            onPrimary: AppColors.surfaceAlt,
+                                            surface: AppColors.surface,
+                                            onSurface: AppColors.textSecondary,
+                                          ),
+                                        ),
+                                        child: child!,
+                                      );
+                                    },
+                                  );
+
+                                  if (pickedDate != null) {
+                                    setModalState(() {
+                                      endDate = DateTime(
+                                        pickedDate.year,
+                                        pickedDate.month,
+                                        pickedDate.day,
+                                        endDate.hour,
+                                        endDate.minute,
+                                      );
+                                    });
+                                  }
+                                },
+                                borderRadius: BorderRadius.circular(12),
+                                child: Container(
+                                  height: 60,
+                                  decoration: BoxDecoration(
+                                    border: Border.all(color: AppColors.border),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        "${endDate.day} / "
+                                            "${endDate.month} / "
+                                            "${endDate.year}",
                                         style: TextStyle(
                                           color: AppColors.textPrimary,
                                           fontSize: 14,
@@ -325,7 +489,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             ).updateTask(
                               task,
                               taskNameController.text.trim(),
-                              selectedDateTime,
+                              endDate,
+                              startDate: startDate,
                             );
 
                             Navigator.pop(context);
@@ -696,7 +861,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           );
                         },
                         updateTask: (_) {
-                          _editTask(index);
+                          _editTask(task);
                         },
                       );
                     },
