@@ -18,7 +18,7 @@ class TaskSheets {
   static void edit(BuildContext context, TasksModel task) {
     final nameController = TextEditingController(text: task.taskName);
     final formKey = GlobalKey<FormState>();
-    DateTime startDate = task.startDate;
+    DateTime startDate = task.startDate!;
     DateTime endDate = task.taskDate;
 
     showModalBottomSheet<void>(

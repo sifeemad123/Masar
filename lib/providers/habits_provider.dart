@@ -10,10 +10,10 @@ class HabitsProvider extends ChangeNotifier {
 
   List<HabitsModel> get habits => habitsBox().values.toList();
 
-  void addHabit({
+  Future<void> addHabit({
     required String habitName,
     required String habitDescription,
-  }) {
+  }) async {
     final habit = HabitsModel()
       ..habitName = habitName
       ..habitDescription = habitDescription
@@ -23,7 +23,8 @@ class HabitsProvider extends ChangeNotifier {
       ..alarmHour = null
       ..alarmMinute = null;
 
-    habitsBox().add(habit);
+    await habitsBox().add(habit);
+
     notifyListeners();
   }
 
@@ -39,16 +40,18 @@ class HabitsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void habitCompleted({required int index}) {
+  Future<void> habitCompleted({required int index}) async {
     final habit = habits[index];
 
     if (habit.habitCompleted) return;
 
-    habit.habitCompleted = true;
-    habit.streakCount += 1;
-    habit.lastCompletedDate = DateTime.now();
+    habit
+      ..habitCompleted = true
+      ..streakCount += 1
+      ..lastCompletedDate = DateTime.now();
 
-    habit.save();
+    await habit.save();
+
     notifyListeners();
   }
 

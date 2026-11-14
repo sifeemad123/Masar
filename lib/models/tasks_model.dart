@@ -10,5 +10,5 @@ class TasksModel extends HiveObject {
   @HiveField(2)
   late DateTime taskDate;
   @HiveField(3)
-  late DateTime startDate;
+  late DateTime? startDate;
 }

@@ -23,7 +23,7 @@ class UserDataProvider extends ChangeNotifier {
     required int taskKey,
     required String taskName,
     required DateTime taskDate,
-    required DateTime startDate,
+    required DateTime? startDate,
   }) async {
     final service = NotificationsService();
 
@@ -33,11 +33,13 @@ class UserDataProvider extends ChangeNotifier {
       taskDate: taskDate,
     );
 
-    await service.startDateScheduleTaskNotification(
-      taskKey: taskKey,
-      taskName: taskName,
-      startDate: startDate,
-    );
+    if (startDate != null) {
+      await service.startDateScheduleTaskNotification(
+        taskKey: taskKey,
+        taskName: taskName,
+        startDate: startDate,
+      );
+    }
   }
 
   Future<void> addNewTask({
@@ -98,7 +100,7 @@ class UserDataProvider extends ChangeNotifier {
           taskKey: taskKey,
           taskName: task.taskName,
           taskDate: task.taskDate,
-          startDate: task.startDate,
+          startDate: task.startDate!,
         );
       }
     }

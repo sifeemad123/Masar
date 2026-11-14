@@ -17,35 +17,69 @@ import 'package:provider/provider.dart';
 
 import 'package:hive_flutter/hive_flutter.dart';
 
-void main() async {
+import 'components/dialogs.dart';
+
+
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   await Hive.initFlutter();
-  Hive.registerAdapter(TasksModelAdapter());
+
+  if (!Hive.isAdapterRegistered(0)) {
+    Hive.registerAdapter(TasksModelAdapter());
+  }
+
+  if (!Hive.isAdapterRegistered(1)) {
+    Hive.registerAdapter(HabitsModelAdapter());
+  }
+
+  if (!Hive.isAdapterRegistered(2)) {
+    Hive.registerAdapter(SubjectsModelAdapter());
+  }
+
+  if (!Hive.isAdapterRegistered(3)) {
+    Hive.registerAdapter(LessonModelAdapter());
+  }
+
+  if (!Hive.isAdapterRegistered(4)) {
+    Hive.registerAdapter(NotesModelAdapter());
+  }
+
   await Hive.openBox<TasksModel>('tasksBox');
-  Hive.registerAdapter(HabitsModelAdapter());
-  await Hive.openBox<HabitsModel>("habitsBox");
-  Hive.registerAdapter(SubjectsModelAdapter());
-  await Hive.openBox<SubjectsModel>("subjectsBox");
-  Hive.registerAdapter(LessonModelAdapter());
-  await Hive.openBox<LessonModel>("lessonsBox");
-  Hive.registerAdapter(NotesModelAdapter());
-  await Hive.openBox<NotesModel>("notesBox");
+  await Hive.openBox<HabitsModel>('habitsBox');
+  await Hive.openBox<SubjectsModel>('subjectsBox');
+  await Hive.openBox<LessonModel>('lessonsBox');
+  await Hive.openBox<NotesModel>('notesBox');
+
   await NotificationsService().initNotification();
 
-  UserDataProvider().deleteCompletedExpiredTasks();
+  final userDataProvider = UserDataProvider();
+  await userDataProvider.deleteCompletedExpiredTasks();
+
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => UserDataProvider()),
-        ChangeNotifierProvider(create: (_) => HabitsProvider()),
-        ChangeNotifierProvider(create: (_) => SubjectsProvider()),
-        ChangeNotifierProvider(create: (_) => LessonsProvider()),
-        ChangeNotifierProvider(create: (_) => NotesProvider()),
+        ChangeNotifierProvider.value(
+          value: userDataProvider,
+        ),
+        ChangeNotifierProvider(
+          create: (_) => HabitsProvider(),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => SubjectsProvider(),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => LessonsProvider(),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => NotesProvider(),
+        ),
       ],
       child: const MyApp(),
     ),
   );
 }
+
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
@@ -57,6 +91,7 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: Dialogs.navigatorKey,
       debugShowCheckedModeBanner: false,
       locale: const Locale('ar'),
       supportedLocales: const [

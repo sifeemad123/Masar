@@ -1,19 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:masar/Screens/notes_screen.dart';
+import 'package:masar/components/dialogs.dart';
+import 'package:masar/components/empty_state.dart';
+import 'package:masar/components/lesson_sheets.dart';
 import 'package:masar/components/lesson_tile.dart';
-import 'package:masar/models/lesson_model.dart';
+import 'package:masar/components/motion.dart';
+import 'package:masar/components/study_kit.dart';
+import 'package:masar/components/subject_sheets.dart';
+import 'package:masar/models/subjects_model.dart';
 import 'package:masar/providers/lessons_provider.dart';
+import 'package:masar/providers/subjects_provider.dart';
+import 'package:masar/theme/AppColors.dart';
 import 'package:provider/provider.dart';
 
-import '../components/button.dart';
-import '../components/dialogs.dart';
-import '../theme/AppColors.dart';
-
-class SubjectDetails extends StatefulWidget {
+class SubjectDetails extends StatelessWidget {
   final String subjectName;
   final String subjectDescription;
   final int subjectId;
   final String? teacherName;
+
   const SubjectDetails({
     super.key,
     required this.subjectName,
@@ -22,977 +27,397 @@ class SubjectDetails extends StatefulWidget {
     this.teacherName,
   });
 
-  @override
-  State<SubjectDetails> createState() => _SubjectDetailsState();
-}
+  // ---------------------------------------------------------------
+  // Pieces
+  // ---------------------------------------------------------------
 
-class _SubjectDetailsState extends State<SubjectDetails> {
-  void _createNewLesson() {
-    final lessonNameController = TextEditingController();
-    final lessonDescriptionController = TextEditingController();
-    final formKey = GlobalKey<FormState>();
-
-    showModalBottomSheet(
-      isScrollControlled: true,
-      showDragHandle: true,
-      backgroundColor: AppColors.surface,
-      context: context,
-      builder: (BuildContext context) {
-        return StatefulBuilder(
-          builder: (context, setModalState) {
-            return Padding(
-              padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).viewInsets.bottom,
-              ),
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(30, 10, 30, 30),
-                  child: Form(
-                    key: formKey,
-                    child: Column(
-                      children: [
-                        // =========================
-                        // Header
-                        // =========================
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              "درس جديد",
-                              style: TextStyle(
-                                color: AppColors.textPrimary,
-                                fontSize: 25,
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-
-                            Container(
-                              decoration: BoxDecoration(
-                                color: AppColors.accent,
-                                borderRadius: BorderRadius.circular(50),
-                              ),
-                              child: IconButton(
-                                onPressed: () {
-                                  Navigator.pop(context);
-                                },
-                                icon: Icon(
-                                  Icons.close,
-                                  color: AppColors.onAccent,
-                                  size: 25,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-
-                        const SizedBox(height: 30),
-
-                        Row(
-                          children: [
-                            Text(
-                              "اسم الدرس",
-                              style: TextStyle(
-                                color: AppColors.textSecondary,
-                                fontSize: 20,
-                              ),
-                            ),
-                          ],
-                        ),
-
-                        const SizedBox(height: 15),
-
-                        TextFormField(
-                          controller: lessonNameController,
-                          style: TextStyle(color: AppColors.textPrimary),
-                          validator: (value) {
-                            if (value == null || value.trim().isEmpty) {
-                              return "يرجى إدخال اسم الدرس";
-                            }
-
-                            return null;
-                          },
-                          decoration: InputDecoration(
-                            fillColor: AppColors.overlay,
-                            filled: true,
-
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(color: AppColors.border),
-                            ),
-
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(
-                                color: AppColors.border,
-                                width: 2,
-                              ),
-                            ),
-
-                            errorBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(color: AppColors.danger),
-                            ),
-
-                            focusedErrorBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(
-                                color: AppColors.danger,
-                                width: 2,
-                              ),
-                            ),
-                          ),
-                        ),
-
-                        const SizedBox(height: 15),
-
-                        Row(
-                          children: [
-                            Text(
-                              "وصف الدرس",
-                              style: TextStyle(
-                                color: AppColors.textSecondary,
-                                fontSize: 20,
-                              ),
-                            ),
-                          ],
-                        ),
-
-                        const SizedBox(height: 15),
-                        TextFormField(
-                          controller: lessonDescriptionController,
-                          style: TextStyle(color: AppColors.textPrimary),
-                          validator: (value) {
-                            if (value == null || value.trim().isEmpty) {
-                              return "يرجى إدخال وصف الدرس";
-                            }
-
-                            return null;
-                          },
-                          decoration: InputDecoration(
-                            fillColor: AppColors.overlay,
-                            filled: true,
-
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(color: AppColors.border),
-                            ),
-
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(
-                                color: AppColors.border,
-                                width: 2,
-                              ),
-                            ),
-
-                            errorBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(color: AppColors.danger),
-                            ),
-
-                            focusedErrorBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(
-                                color: AppColors.danger,
-                                width: 2,
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        Button(
-                          text: "حفظ",
-                          onPressed: () {
-                            if (!formKey.currentState!.validate()) {
-                              Dialogs.failed(
-                                context: context,
-                                message: "يرجى إدخال جميع البيانات المطلوبة",
-                              );
-                              return;
-                            }
-
-                            Provider.of<LessonsProvider>(
-                              context,
-                              listen: false,
-                            ).createLesson(
-                              lessonName: lessonNameController.text.trim(),
-                              lessonDescription: lessonDescriptionController
-                                  .text
-                                  .trim(),
-                              subjectId: widget.subjectId,
-                            );
-                            Navigator.pop(context);
-                            Dialogs.success(
-                              context: context,
-                              message: "تمت إضافة الدرس بنجاح",
-                            );
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-
-  void _editLesson(LessonModel lesson) {
-    final lessonNameController = TextEditingController(text: lesson.lessonName);
-    final lessonDescriptionController = TextEditingController(
-      text: lesson.lessonDescription,
-    );
-    final formKey = GlobalKey<FormState>();
-
-    showModalBottomSheet(
-      isScrollControlled: true,
-      showDragHandle: true,
-      backgroundColor: AppColors.surface,
-      context: context,
-      builder: (BuildContext context) {
-        return StatefulBuilder(
-          builder: (context, setModalState) {
-            return Padding(
-              padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).viewInsets.bottom,
-              ),
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(30, 10, 30, 30),
-                  child: Form(
-                    key: formKey,
-                    child: Column(
-                      children: [
-                        // =========================
-                        // Header
-                        // =========================
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              "تعديل درس ${lesson.lessonName}",
-                              style: TextStyle(
-                                color: AppColors.textPrimary,
-                                fontSize: 25,
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-
-                            Container(
-                              decoration: BoxDecoration(
-                                color: AppColors.accent,
-                                borderRadius: BorderRadius.circular(50),
-                              ),
-                              child: IconButton(
-                                onPressed: () {
-                                  Navigator.pop(context);
-                                },
-                                icon: Icon(
-                                  Icons.close,
-                                  color: AppColors.onAccent,
-                                  size: 25,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-
-                        const SizedBox(height: 30),
-
-                        Row(
-                          children: [
-                            Text(
-                              "اسم الدرس",
-                              style: TextStyle(
-                                color: AppColors.textSecondary,
-                                fontSize: 20,
-                              ),
-                            ),
-                          ],
-                        ),
-
-                        const SizedBox(height: 15),
-
-                        TextFormField(
-                          controller: lessonNameController,
-                          style: TextStyle(color: AppColors.textPrimary),
-                          validator: (value) {
-                            if (value == null || value.trim().isEmpty) {
-                              return "يرجى إدخال اسم الدرس";
-                            }
-
-                            return null;
-                          },
-                          decoration: InputDecoration(
-                            fillColor: AppColors.overlay,
-                            filled: true,
-
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(color: AppColors.border),
-                            ),
-
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(
-                                color: AppColors.border,
-                                width: 2,
-                              ),
-                            ),
-
-                            errorBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(color: AppColors.danger),
-                            ),
-
-                            focusedErrorBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(
-                                color: AppColors.danger,
-                                width: 2,
-                              ),
-                            ),
-                          ),
-                        ),
-
-                        const SizedBox(height: 15),
-
-                        Row(
-                          children: [
-                            Text(
-                              "وصف الدرس",
-                              style: TextStyle(
-                                color: AppColors.textSecondary,
-                                fontSize: 20,
-                              ),
-                            ),
-                          ],
-                        ),
-
-                        const SizedBox(height: 15),
-                        TextFormField(
-                          controller: lessonDescriptionController,
-                          style: TextStyle(color: AppColors.textPrimary),
-                          validator: (value) {
-                            if (value == null || value.trim().isEmpty) {
-                              return "يرجى إدخال وصف الدرس";
-                            }
-
-                            return null;
-                          },
-                          decoration: InputDecoration(
-                            fillColor: AppColors.overlay,
-                            filled: true,
-
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(color: AppColors.border),
-                            ),
-
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(
-                                color: AppColors.border,
-                                width: 2,
-                              ),
-                            ),
-
-                            errorBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(color: AppColors.danger),
-                            ),
-
-                            focusedErrorBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(
-                                color: AppColors.danger,
-                                width: 2,
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        Button(
-                          text: "حفظ",
-                          onPressed: () {
-                            if (!formKey.currentState!.validate()) {
-                              Dialogs.failed(
-                                context: context,
-                                message: "يرجى إدخال جميع البيانات المطلوبة",
-                              );
-                              return;
-                            }
-
-                            Provider.of<LessonsProvider>(
-                              context,
-                              listen: false,
-                            ).editLesson(
-                              lesson: lesson,
-                              lessonName: lessonNameController.text.trim(),
-                              lessonDescription: lessonDescriptionController
-                                  .text
-                                  .trim(),
-                            );
-                            Navigator.pop(context);
-                            Dialogs.success(
-                              context: context,
-                              message: "تمت تعديل الدرس بنجاح",
-                            );
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-
-  static void confirmation({
-    required BuildContext context,
-    required String message,
-    required LessonModel lesson,
-  }) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return Dialog(
-          backgroundColor: Colors.transparent,
-          child: Container(
-            width: 350,
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(15),
+  Widget _topBar(BuildContext context, SubjectsModel? subject) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+      child: FadeSlideIn(
+        child: Row(
+          children: [
+            RoundIconButton(
+              icon: Icons.arrow_back_rounded,
+              onTap: () => Navigator.pop(context),
             ),
-            clipBehavior: Clip.antiAlias,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: double.infinity,
-                  color: AppColors.overlay,
-                  padding: const EdgeInsets.symmetric(vertical: 20),
-                  child: Icon(
-                    Icons.check,
-                    size: 50,
-                    color: AppColors.textPrimary,
-                  ),
+            const Spacer(),
+            if (subject != null) ...[
+              RoundIconButton(
+                icon: Icons.edit_rounded,
+                color: AppColors.accent,
+                onTap: () => SubjectSheets.show(context, subject: subject),
+              ),
+              const SizedBox(width: 10),
+              RoundIconButton(
+                icon: Icons.delete_outline_rounded,
+                color: AppColors.danger,
+                onTap: () => SubjectSheets.confirmDelete(
+                  context,
+                  subject,
+                  onDeleted: () => Navigator.pop(context),
                 ),
-
-                Padding(
-                  padding: const EdgeInsets.all(10),
-                  child: Text(
-                    " تأكيد ",
-                    style: TextStyle(
-                      color: AppColors.textPrimary,
-                      fontSize: 25,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-
-                Padding(
-                  padding: const EdgeInsets.all(10),
-                  child: Text(
-                    message,
-                    style: TextStyle(
-                      color: AppColors.textSecondary,
-                      fontSize: 16,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-
-                const SizedBox(height: 5),
-
-                Row(
-                  spacing: 20,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                        Provider.of<LessonsProvider>(
-                          context,
-                          listen: false,
-                        ).deleteLesson(lesson: lesson, context: context);
-                        Dialogs.success(
-                          context: context,
-                          message: "تم حذف الدرس بنجاح",
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.overlay,
-                      ),
-                      child: Text(
-                        "تأكيد",
-                        style: TextStyle(color: AppColors.textPrimary),
-                      ),
-                    ),
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.overlay,
-                      ),
-                      child: Text(
-                        "إغلاق",
-                        style: TextStyle(color: AppColors.textPrimary),
-                      ),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 10),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final lessons = Provider.of<LessonsProvider>(
-      context,
-    ).lessons.where((lesson) => lesson.subjectId == widget.subjectId).toList();
-
-    final lessonsDone = lessons
-        .where((lesson) => lesson.lessonCompleted)
-        .length;
-
-    final lessonsNotDone = lessons
-        .where((lesson) => !lesson.lessonCompleted)
-        .length;
-
-    final progress = lessons.isEmpty
-        ? 0.0
-        : lessonsDone / lessons.length;
-    String teacher = widget.teacherName!;
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          "تفاصيل المادة",
-          style: TextStyle(color: AppColors.textPrimary),
+              ),
+            ],
+          ],
         ),
-        backgroundColor: AppColors.background,
-        foregroundColor: AppColors.textPrimary,
       ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(30),
-          child: Directionality(
-            textDirection: TextDirection.rtl,
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  Column(
-                    spacing: 20,
+    );
+  }
+
+  Widget _heroCard({
+    required String name,
+    required String description,
+    required String teacher,
+  }) {
+    return FadeSlideIn(
+      index: 1,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 18, 20, 6),
+        child: Container(
+          width: double.infinity,
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              begin: Alignment.topRight,
+              end: Alignment.bottomLeft,
+              colors: [AppColors.accent, AppColors.accentDark],
+            ),
+            borderRadius: BorderRadius.circular(28),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.accent.withValues(alpha: 0.32),
+                blurRadius: 28,
+                offset: const Offset(0, 14),
+              ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(28),
+            child: Stack(
+              children: [
+                PositionedDirectional(
+                  end: -30,
+                  top: -40,
+                  child: Container(
+                    width: 140,
+                    height: 140,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withValues(alpha: 0.08),
+                    ),
+                  ),
+                ),
+                PositionedDirectional(
+                  start: -25,
+                  bottom: -55,
+                  child: Container(
+                    width: 120,
+                    height: 120,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withValues(alpha: 0.06),
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(22),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
-                        spacing: 20,
                         children: [
-                          Icon(
-                            Icons.menu_book_outlined,
-                            color: AppColors.accentLight,
-                            size: 35,
+                          Hero(
+                            tag: 'subject-icon-$subjectId',
+                            child: Container(
+                              width: 62,
+                              height: 62,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.18),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: const Icon(
+                                Icons.menu_book_rounded,
+                                color: Colors.white,
+                                size: 32,
+                              ),
+                            ),
                           ),
-
+                          const SizedBox(width: 16),
                           Expanded(
-                            child: Hero(
-                              tag: "subject-name-${widget.subjectName}",
-                              child: Material(
-                                color: Colors.transparent,
-                                child: Text(
-                                  widget.subjectName,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    fontSize: 32,
-                                    fontWeight: FontWeight.bold,
-                                    color: AppColors.textPrimary,
-                                  ),
-                                  textAlign: TextAlign.right,maxLines: 5,
-                                ),
+                            child: Text(
+                              name,
+                              maxLines: 3,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 26,
+                                fontWeight: FontWeight.w900,
+                                height: 1.25,
                               ),
                             ),
                           ),
                         ],
                       ),
-                      Hero(
-                        tag: "subject-desc-${widget.subjectName}",
-                        child: Material(
-                          color: Colors.transparent,
-                          child: Text(
-                            widget.subjectDescription,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(color: AppColors.textSecondary), textAlign: TextAlign.center,maxLines: 5,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  if (widget.teacherName != null &&
-                      widget.teacherName!.trim().isNotEmpty)
-                    Column(
-                      spacing: 20,
-                      children: [
-                        Row(
-                          spacing: 20,
-                          children: [
-                            Icon(
-                              Icons.person_2_outlined,
-                              color: AppColors.accentLight,
-                              size: 35,
-                            ),
-                            Text(
-                              "المدرس",
-                              style: TextStyle(
-                                fontSize: 25,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.textPrimary,
-                              ),
-                            ),
-                          ],
-                        ),
-                        Hero(
-                          tag: "teacherName-${widget.subjectId}",
-                          child: Material(
-                            color: Colors.transparent,
-                            child: Text(
-                              teacher,
-                              style: TextStyle(
-                                color: AppColors.textSecondary,
-                              ),textAlign: TextAlign.center,maxLines: 5,
-                            ),
+                      if (description.isNotEmpty) ...[
+                        const SizedBox(height: 16),
+                        Text(
+                          description,
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.88),
+                            fontSize: 15,
+                            height: 1.6,
                           ),
                         ),
                       ],
-                    ),
-                  SizedBox(height: 20),
-                  Container(
-                    decoration: BoxDecoration(
-                      color: AppColors.surfaceAlt,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: AppColors.border,
-                        width: 2
-                      )
-                    ),
-                    padding: EdgeInsets.all(20),
-                    child: Column(
-                      spacing: 25,
-                      children: [
-                        Row(
-                          spacing: 10,
-                          children: [
-                            Container(
-                              padding: EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                color: AppColors.surface,
-                                borderRadius: BorderRadius.circular(5)
-                              ),
-                                child: Icon(Icons.gps_not_fixed_outlined, color: AppColors.accentDark,)),
-                            Column(
-                              spacing: 5,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text("تقدم الدروس", style: TextStyle(
-                                  color: AppColors.textPrimary,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold
-                                ),),Text("تابع الدروس الخلصانه و المتبقيه", style: TextStyle(
-                                  color: AppColors.textSecondary,
-                                  fontSize: 15
-                                ),),
-                              ],
-                            ),
-                          ],
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Column(
-                              spacing: 10,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  spacing: 10,
-                                  children: [
-                                    Container(
-                                        padding: EdgeInsets.all(10),
-                                        decoration: BoxDecoration(
-                                            color: AppColors.success,
-                                            borderRadius: BorderRadius.circular(100)
-                                        ),
-                                        child: Icon(Icons.done, color: AppColors.onSuccess,)),
-                                    Text(
-                                      "خلصت : $lessonsDone",
-                                      style: TextStyle(
-                                        color: AppColors.textPrimary,
-                                        fontSize: 17,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                Row(
-                                  spacing: 10,
-                                  children: [
-                                    Container(
-                                        padding: EdgeInsets.all(10),
-                                        decoration: BoxDecoration(
-                                            color: AppColors.danger,
-                                            borderRadius: BorderRadius.circular(100)
-                                        ),
-                                        child: Icon(Icons.close, color: AppColors.onDanger,)),
-                                    Text(
-                                      "باقي : $lessonsNotDone",
-                                      style: TextStyle(
-                                        color: AppColors.textPrimary,
-                                        fontSize: 17,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                            Stack(
-                              alignment: Alignment.center,
-                              children: [
-                                SizedBox(
-                                  width: 100,
-                                  height: 100,
-                                  child: CircularProgressIndicator(
-                                    value: progress,
-                                    strokeWidth: 8,
-                                    backgroundColor: AppColors.surface,
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                        AppColors.accent
-                                    ),
-                                  ),
-                                ),
-                                Text(
-                                  "${(progress * 100).round()}%",
-                                  style: TextStyle(
-                                    color: AppColors.textPrimary,
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        if (lessons.isNotEmpty && lessonsNotDone == 0)
-                          Text(
-                            "عاش خلصت كل الدروس اللي عليك",
-                            style: TextStyle(
-                              color: AppColors.textPrimary,
-                              fontSize: 17,
-                              fontWeight: FontWeight.bold,
-                            ),
+                      if (teacher.isNotEmpty) ...[
+                        const SizedBox(height: 16),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
                           ),
-                        if(lessons.isEmpty)
-                          Column(
-                            spacing: 10,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.16),
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text(
-                                "المادة لسه فاضية",
-                                style: TextStyle(
-                                  color: AppColors.textPrimary,
-                                  fontSize: 17,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                              const Icon(
+                                Icons.person_outline_rounded,
+                                color: Colors.white,
+                                size: 18,
                               ),
-                              Text(
-                                "ابدأ بإضافة أول درس ليك في المادة",
-                                style: TextStyle(
-                                  color: AppColors.textSecondary,
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.bold,
+                              const SizedBox(width: 7),
+                              Flexible(
+                                child: Text(
+                                  teacher,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w700,
+                                  ),
                                 ),
                               ),
                             ],
                           ),
+                        ),
                       ],
-                    ),
-                  ),
-                  SizedBox(height: 30),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        "الدروس",
-                        style: TextStyle(
-                          color: AppColors.textPrimary,
-                          fontSize: 30,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Text(
-                        "${lessons.length}",
-                        style: TextStyle(
-                          color: AppColors.textSecondary,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
-                        ),
-                      ),
                     ],
                   ),
-                  SizedBox(height: 30),
-                  if (lessons.isEmpty)
-                      Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.menu_book_outlined,
-                              size: 70,
-                              color: AppColors.textSecondary,
-                            ),
-
-                            const SizedBox(height: 15),
-
-                            Text(
-                              "مفيش دروس",
-                              style: TextStyle(
-                                color: AppColors.textPrimary,
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-
-                            const SizedBox(height: 8),
-
-                            Text(
-                              "ابدأ بأضافة اول درس ليك في الماده",
-                              style: TextStyle(
-                                color: AppColors.textSecondary,
-                                fontSize: 15,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                  if (lessons.isNotEmpty)
-                      ListView.builder(
-                        shrinkWrap: true,
-                        physics: NeverScrollableScrollPhysics(),
-                        itemCount: lessons.length,
-                        itemBuilder: (context, index) {
-                          final lesson = lessons[index];
-                          return LessonTile(
-                            lessonName: lesson.lessonName,
-                            lessonDescription: lesson.lessonDescription,
-                            lessonCompleted: lesson.lessonCompleted,
-                            onChanged: (_) {
-                              if (!lesson.lessonCompleted) {
-                                Provider.of<LessonsProvider>(
-                                  context,
-                                  listen: false,
-                                ).lessonCompleted(lesson: lesson);
-                                showDialog(
-                                  context: context,
-                                  builder: (context) {
-                                    return AlertDialog(
-                                      backgroundColor: AppColors.surface,
-                                      icon: Icon(
-                                        Icons.check_circle_outline_rounded,
-                                        color: AppColors.accentLight,
-                                        size: 40,
-                                      ),
-                                      title: Text(
-                                        "عاش",
-                                        style: TextStyle(
-                                          color: AppColors.textPrimary,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 25,
-                                        ),
-                                      ),
-                                      content: Text(
-                                        "خلصت درس ${lesson.lessonName} بنجاح\nاستمر كده، خطوة كمان وأنت أقرب لهدفك",
-                                        style: TextStyle(
-                                          color: AppColors.textSecondary,
-                                        ),
-                                      ),
-                                      contentPadding:
-                                          EdgeInsetsGeometry.symmetric(
-                                            horizontal: 50,
-                                            vertical: 20,
-                                          ),
-                                    );
-                                  },
-                                );
-                              }
-                            },
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => NotesScreen(
-                                    lessonName: lesson.lessonName,
-                                    lessonDescription: lesson.lessonDescription,
-                                    lessonId: lesson.id,
-                                  ),
-                                ),
-                              );
-                            },
-                            lessonId: lesson.id,
-                            onDelete: (_) {
-                              confirmation(
-                                context: context,
-                                message:
-                                    "متأكد عاوز تمسح درس ${lesson.lessonName}",
-                                lesson: lesson,
-                              );
-                            },
-                            onEdit: (_) {
-                              _editLesson(lesson);
-                            },
-                          );
-                        },
-                      ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),
       ),
-      floatingActionButton: SizedBox(
-        width: 70,
-        height: 70,
-        child: FloatingActionButton(
-          onPressed: () {
-            _createNewLesson();
-          },
-          backgroundColor: AppColors.accent,
-          child: const Icon(Icons.add, color: AppColors.onAccent),
-        ),
-      ),
-
-      floatingActionButtonAnimator: FloatingActionButtonAnimator.scaling,
-
-      floatingActionButtonLocation: CustomFabLocation(),
     );
   }
-}
 
-class CustomFabLocation extends FloatingActionButtonLocation {
-  const CustomFabLocation();
+  Widget _progressCard({required int total, required int done}) {
+    final remaining = total - done;
+    final progress = total == 0 ? 0.0 : done / total;
+    final allDone = total > 0 && remaining == 0;
+
+    final title = total == 0
+        ? 'المادة لسه فاضية'
+        : allDone
+        ? 'عاش! خلصت كل الدروس'
+        : 'خلصت $done من $total';
+    final subtitle = total == 0
+        ? 'ابدأ بإضافة أول درس ليك'
+        : allDone
+        ? 'كمّل بنفس الحماس'
+        : 'فاضل $remaining ${remaining <= 10 ? 'دروس' : 'درس'}';
+
+    return FadeSlideIn(
+      index: 2,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(26),
+            border: Border.all(color: AppColors.border.withValues(alpha: 0.7)),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.accent.withValues(alpha: 0.08),
+                blurRadius: 22,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              ProgressRing(
+                progress: progress,
+                size: 92,
+                stroke: 9,
+                color: allDone ? AppColors.success : AppColors.accent,
+                track: AppColors.accent.withValues(alpha: 0.12),
+                labelColor: AppColors.textPrimary,
+                fontSize: 18,
+              ),
+              const SizedBox(width: 20),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 300),
+                      child: Text(
+                        title,
+                        key: ValueKey(title),
+                        style: const TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 19,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      subtitle,
+                      style: const TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 14,
+                      ),
+                    ),
+                    if (total > 0) ...[
+                      const SizedBox(height: 12),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 6,
+                        children: [
+                          InfoPill(
+                            icon: Icons.check_circle_rounded,
+                            text: 'خلصت $done',
+                            color: AppColors.success,
+                          ),
+                          InfoPill(
+                            icon: Icons.pending_rounded,
+                            text: 'باقي $remaining',
+                            color: AppColors.warm,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ---------------------------------------------------------------
+  // Build
+  // ---------------------------------------------------------------
 
   @override
-  Offset getOffset(ScaffoldPrelayoutGeometry geometry) {
-    return Offset(30, geometry.scaffoldSize.height - 315);
+  Widget build(BuildContext context) {
+    final subject = context
+        .watch<SubjectsProvider>()
+        .subjects
+        .where((s) => s.id == subjectId)
+        .firstOrNull;
+
+    final name = subject?.subjectName ?? subjectName;
+    final description = (subject?.subjectDescription ?? subjectDescription).trim();
+    final teacher = (subject?.teacherName ?? teacherName ?? '').trim();
+
+    final lessonsProvider = context.watch<LessonsProvider>();
+    final lessons = lessonsProvider.lessons
+        .where((l) => l.subjectId == subjectId)
+        .toList();
+    final done = lessons.where((l) => l.lessonCompleted).length;
+
+    return Scaffold(
+      body: PageBackground(
+        child: SafeArea(
+          bottom: false,
+          child: Directionality(
+            textDirection: TextDirection.rtl,
+            child: ListView(
+              physics: const BouncingScrollPhysics(
+                parent: AlwaysScrollableScrollPhysics(),
+              ),
+              padding: const EdgeInsets.only(bottom: 130),
+              children: [
+                _topBar(context, subject),
+                _heroCard(
+                  name: name,
+                  description: description,
+                  teacher: teacher,
+                ),
+                _progressCard(total: lessons.length, done: done),
+                SectionTitle(title: 'الدروس', count: lessons.length),
+                if (lessons.isEmpty)
+                  const Padding(
+                    padding: EdgeInsets.only(top: 14),
+                    child: EmptyState(
+                      icon: Icons.menu_book_outlined,
+                      title: 'مفيش دروس',
+                      subtitle: 'ابدأ بإضافة أول درس ليك في المادة دي',
+                    ),
+                  )
+                else
+                  for (var i = 0; i < lessons.length; i++)
+                    LessonTile(
+                      key: ObjectKey(lessons[i]),
+                      index: i,
+                      lessonId: lessons[i].id,
+                      lessonName: lessons[i].lessonName,
+                      lessonDescription: lessons[i].lessonDescription,
+                      lessonCompleted: lessons[i].lessonCompleted,
+                      onChanged: (_) {
+                        final lesson = lessons[i];
+                        lessonsProvider.toggleLesson(lesson: lesson);
+                        if (lesson.lessonCompleted &&
+                            lessons.every((l) => l.lessonCompleted)) {
+                          Dialogs.success(
+                            context: context,
+                            title: 'عاش',
+                            message:
+                            'خلصت كل دروس "$name".\nاستمر كده، إنت أقرب لهدفك',
+                          );
+                        }
+                      },
+                      onTap: () {
+                        final lesson = lessons[i];
+                        Navigator.push<void>(
+                          context,
+                          fadeScaleRoute<void>(
+                            NotesScreen(
+                              lessonName: lesson.lessonName,
+                              lessonDescription: lesson.lessonDescription,
+                              lessonId: lesson.id,
+                            ),
+                          ),
+                        );
+                      },
+                      onDelete: (_) =>
+                          LessonSheets.confirmDelete(context, lessons[i]),
+                      onEdit: (_) => LessonSheets.show(
+                        context,
+                        subjectId: subjectId,
+                        lesson: lessons[i],
+                      ),
+                    ),
+              ],
+            ),
+          ),
+        ),
+      ),
+      floatingActionButton: AddFab(
+        onTap: () => LessonSheets.show(context, subjectId: subjectId),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+    );
   }
 }

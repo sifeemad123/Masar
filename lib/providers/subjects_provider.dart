@@ -1,10 +1,8 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 import 'package:masar/models/lesson_model.dart';
+import 'package:masar/models/notes_model.dart';
 import 'package:masar/models/subjects_model.dart';
-import 'package:masar/providers/lessons_provider.dart';
-import 'package:provider/provider.dart';
-import 'package:uuid/uuid.dart';
 
 class SubjectsProvider extends ChangeNotifier {
   static Box<SubjectsModel> subjectsBox() =>
@@ -21,7 +19,8 @@ class SubjectsProvider extends ChangeNotifier {
 
     return subjects
         .map((subject) => subject.id)
-        .reduce((a, b) => a > b ? a : b) + 1;
+        .reduce((a, b) => a > b ? a : b) +
+        1;
   }
 
   void createSubject({
@@ -38,18 +37,35 @@ class SubjectsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void deleteSubject({required SubjectsModel subject}){
-    final List<LessonModel> lessons = Hive.box<LessonModel>("lessonsBox").values.toList().where((lesson){
-      return lesson.subjectId == subject.id;
-    }).toList();
-    for(final lesson in lessons){
+  /// Deletes the subject, its lessons and every note inside those lessons.
+  void deleteSubject({required SubjectsModel subject}) {
+    final lessons = Hive.box<LessonModel>("lessonsBox")
+        .values
+        .where((lesson) => lesson.subjectId == subject.id)
+        .toList();
+    final lessonIds = lessons.map((l) => l.id).toSet();
+
+    final notes = Hive.box<NotesModel>("notesBox")
+        .values
+        .where((note) => lessonIds.contains(note.lessonId))
+        .toList();
+
+    for (final note in notes) {
+      note.delete();
+    }
+    for (final lesson in lessons) {
       lesson.delete();
     }
     subject.delete();
     notifyListeners();
   }
 
-  void editSubject({required String subjectName, required String subjectDescription, required SubjectsModel subject, String? teacherName}){
+  void editSubject({
+    required String subjectName,
+    required String subjectDescription,
+    required SubjectsModel subject,
+    String? teacherName,
+  }) {
     subject.subjectName = subjectName;
     subject.subjectDescription = subjectDescription;
     subject.teacherName = teacherName;

@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/widgets.dart';
 import 'package:hive/hive.dart';
 import 'package:masar/models/lesson_model.dart';
 import 'package:masar/providers/notes_provider.dart';
@@ -23,7 +23,7 @@ class LessonsProvider extends ChangeNotifier {
   void createLesson({
     required String lessonName,
     required String lessonDescription,
-    required int subjectId
+    required int subjectId,
   }) {
     final lesson = LessonModel()
       ..lessonCompleted = false
@@ -35,23 +35,40 @@ class LessonsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void lessonCompleted({required LessonModel lesson}){
+  /// Kept for backwards compatibility: marks the lesson as done.
+  void lessonCompleted({required LessonModel lesson}) {
     lesson.lessonCompleted = true;
     lesson.save();
     notifyListeners();
   }
 
-  void deleteLesson({required LessonModel lesson, required BuildContext context}) {
-    final notes = Provider.of<NotesProvider>(context, listen: false).notes.where((note){
-      return note.lessonId == lesson.id;
-    }).toList();
-    for(final note in notes){
+  /// Done <-> not done (used by the new lesson tile).
+  void toggleLesson({required LessonModel lesson}) {
+    lesson.lessonCompleted = !lesson.lessonCompleted;
+    lesson.save();
+    notifyListeners();
+  }
+
+  void deleteLesson({
+    required LessonModel lesson,
+    required BuildContext context,
+  }) {
+    final notesProvider = Provider.of<NotesProvider>(context, listen: false);
+    final notes = notesProvider.notes
+        .where((note) => note.lessonId == lesson.id)
+        .toList();
+    for (final note in notes) {
       note.delete();
     }
     lesson.delete();
     notifyListeners();
   }
-  void editLesson({required LessonModel lesson, required String lessonName, required String lessonDescription}){
+
+  void editLesson({
+    required LessonModel lesson,
+    required String lessonName,
+    required String lessonDescription,
+  }) {
     lesson.lessonName = lessonName;
     lesson.lessonDescription = lessonDescription;
     lesson.save();
