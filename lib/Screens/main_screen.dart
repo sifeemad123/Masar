@@ -770,6 +770,7 @@ class _MainScreenState extends State<MainScreen> {
         if (!didPop) _goTo(0);
       },
       child: Scaffold(
+        resizeToAvoidBottomInset: false,
         extendBody: true,
         body: MediaQuery(
           data: mq.copyWith(
@@ -779,6 +780,7 @@ class _MainScreenState extends State<MainScreen> {
             controller: pageController,
             physics: const BouncingScrollPhysics(),
             onPageChanged: (index) {
+              FocusManager.instance.primaryFocus?.unfocus();
               setState(() => currentScreen = index);
             },
             children: screens,

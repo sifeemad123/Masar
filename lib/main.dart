@@ -92,6 +92,11 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       navigatorKey: Dialogs.navigatorKey,
+      builder: (context, child) => GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+        child: child,
+      ),
       debugShowCheckedModeBanner: false,
       locale: const Locale('ar'),
       supportedLocales: const [

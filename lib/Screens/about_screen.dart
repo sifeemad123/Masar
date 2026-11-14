@@ -7,7 +7,7 @@ import '../theme/AppColors.dart';
 class AboutScreen extends StatefulWidget {
   const AboutScreen({super.key});
 
-  static const String appVersion = '1.0.0';
+  static const String appVersion = '1.1.0';
   static const String developerName = 'سيف';
   static const String developerEmail = 'sifeemad12345@gmail.com';
 

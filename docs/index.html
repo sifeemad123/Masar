@@ -6,26 +6,32 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>تحميل مسار</title>
   <link rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500&family=Readex+Pro:wght@400;500;600;700&display=swap">
+        href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@400;500;600;700&display=swap">
   <style>
-    /* Colors are the app's own AppColors (Ocean Pearl, light only). */
+    /* Same design tokens as the app (AppColors, Ocean Pearl, light only). */
     :root {
       color-scheme: light;
       --bg: #EDF6F9;
+      --pearl-light: #F8FCFD;
+      --pearl-dark: #D7E8EB;
       --surface: #FFFFFF;
-      --tile: #D3EBE8;
+      --surface-alt: #E5F0F2;
       --ink: #092F34;
       --ink-2: #3F6669;
       --ink-3: #789294;
-      --line: #D2E2E4;
+      --divider: #D2E2E4;
       --border: #A9C9CA;
       --accent: #006D77;
+      --accent-dark: #00515A;
+      --accent-light: #83C5BE;
       --on-accent: #F3FAFA;
       --warm: #E29578;
-      --frame: #092F34;
-      --font-display: 'Readex Pro', 'IBM Plex Sans Arabic', Tahoma, system-ui, sans-serif;
-      --font-body: 'IBM Plex Sans Arabic', 'Readex Pro', Tahoma, system-ui, sans-serif;
-      --font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+      --success: #4E8B78;
+      --success-light: #3DDC97;
+      --danger: #C96F62;
+      --overlay: rgba(0, 38, 43, 0.2);
+      --font: 'Readex Pro', Tahoma, system-ui, sans-serif;
+      --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
     }
 
     * {
@@ -34,24 +40,22 @@
 
     html {
       -webkit-text-size-adjust: 100%;
+      background: var(--bg);
     }
 
     img {
       max-width: 100%;
     }
 
-    [hidden] {
-      display: none !important;
-    }
-
     body {
       margin: 0;
-      background: var(--bg);
+      min-height: 100vh;
+      background: linear-gradient(180deg, var(--pearl-light) 0%, var(--bg) 45%, var(--pearl-dark) 100%) fixed;
       color: var(--ink);
-      font-family: var(--font-body);
+      font-family: var(--font);
       font-size: 16px;
       line-height: 1.7;
-      padding-block: 20px 36px;
+      padding-block: 20px 40px;
       padding-left: max(16px, env(safe-area-inset-left, 0px));
       padding-right: max(16px, env(safe-area-inset-right, 0px));
     }
@@ -60,19 +64,20 @@
       max-width: 1040px;
       margin-inline: auto;
       display: grid;
-      gap: 72px;
+      gap: 64px;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin: 0;
     }
 
     h1,
     h2,
     h3 {
-      font-family: var(--font-display);
-      margin: 0;
       text-wrap: balance;
-    }
-
-    p {
-      margin: 0;
     }
 
     a {
@@ -82,10 +87,10 @@
     :focus-visible {
       outline: 3px solid var(--accent);
       outline-offset: 3px;
-      border-radius: 6px;
+      border-radius: 8px;
     }
 
-    /* header */
+    /* ---------- header ---------- */
     .top {
       display: flex;
       align-items: center;
@@ -101,35 +106,38 @@
     }
 
     .brand img {
-      width: 44px;
-      height: 44px;
-      border-radius: 12px;
+      width: 48px;
+      height: 48px;
+      border-radius: 16px;
       display: block;
+      box-shadow: 0 8px 18px -6px rgba(0, 109, 119, 0.4);
     }
 
     .brand span {
-      font-family: var(--font-display);
       font-weight: 700;
-      font-size: 1.5rem;
+      font-size: 1.6rem;
     }
 
-    .top a.src {
-      font-size: 0.9rem;
+    .src {
+      font-size: 0.88rem;
+      font-weight: 500;
       color: var(--ink-2);
       text-decoration: none;
-      border-bottom: 1px solid var(--line);
-      padding-block: 2px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 8px 16px;
     }
 
-    .top a.src:hover {
+    .src:hover {
       color: var(--accent);
       border-color: var(--accent);
     }
 
-    /* hero */
+    /* ---------- hero ---------- */
     .hero {
       display: grid;
-      grid-template-columns: 1.15fr 0.85fr;
+      grid-template-columns: 1.1fr 0.9fr;
       gap: 40px;
       align-items: center;
     }
@@ -138,17 +146,34 @@
       min-width: 0;
     }
 
-    .eyebrow {
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
       font-size: 0.85rem;
-      letter-spacing: 0.04em;
+      font-weight: 600;
       color: var(--accent);
+      background: rgba(0, 109, 119, 0.1);
+      border-radius: 99px;
+      padding: 5px 14px;
+    }
+
+    .chip b {
+      font-family: var(--mono);
       font-weight: 500;
-      margin-bottom: 14px;
+      direction: ltr;
+      unicode-bidi: isolate;
+      background: var(--accent);
+      color: var(--on-accent);
+      border-radius: 99px;
+      padding: 0 9px;
+      font-size: 0.78rem;
     }
 
     .hero h1 {
-      font-size: clamp(2.1rem, 5.2vw, 3.5rem);
-      line-height: 1.25;
+      margin-top: 18px;
+      font-size: clamp(2.2rem, 5.4vw, 3.6rem);
+      line-height: 1.22;
       font-weight: 700;
     }
 
@@ -156,329 +181,651 @@
       margin-top: 18px;
       color: var(--ink-2);
       font-size: 1.1rem;
-      max-width: 34em;
+      max-width: 32em;
     }
 
     .cta {
       margin-top: 30px;
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 14px 22px;
     }
 
     .btn {
       display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 12px;
-      background: var(--accent);
+      height: 62px;
+      padding-inline: 36px;
+      border-radius: 20px;
+      background: linear-gradient(270deg, var(--accent), var(--accent-dark));
       color: var(--on-accent);
-      font-family: var(--font-display);
       font-weight: 600;
-      font-size: 1.1rem;
-      padding: 15px 28px;
-      border-radius: 14px;
+      font-size: 1.15rem;
       text-decoration: none;
-      transition: transform 0.15s ease, filter 0.15s ease;
-    }
-
-    .btn:hover {
-      filter: brightness(1.08);
-      transform: translateY(-1px);
+      box-shadow: 0 10px 24px -4px rgba(0, 109, 119, 0.4);
+      transition: transform 0.14s ease-out;
     }
 
     .btn:active {
-      transform: translateY(0);
+      transform: scale(0.96);
     }
 
     .btn svg {
-      width: 22px;
-      height: 22px;
+      width: 24px;
+      height: 24px;
       flex: none;
     }
 
-    .meta {
-      margin-top: 18px;
+    .pills {
+      margin-top: 22px;
       display: flex;
       flex-wrap: wrap;
-      gap: 8px 18px;
-      color: var(--ink-2);
-      font-size: 0.9rem;
+      gap: 10px;
     }
 
-    .meta b {
-      font-weight: 500;
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--ink-2);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 6px 12px;
+    }
+
+    .pill .num {
+      font-family: var(--mono);
+      direction: ltr;
+      unicode-bidi: isolate;
       color: var(--ink);
     }
 
-    .meta .num {
-      font-family: var(--font-mono);
-      direction: ltr;
-      unicode-bidi: isolate;
-    }
-
-    /* drawn phone */
+    /* ---------- the app, drawn ---------- */
     .phone-wrap {
+      position: relative;
       display: flex;
       justify-content: center;
+      padding-block: 8px;
+    }
+
+    .phone-wrap::before,
+    .phone-wrap::after {
+      content: "";
+      position: absolute;
+      border-radius: 50%;
+      z-index: 0;
+    }
+
+    .phone-wrap::before {
+      width: 260px;
+      height: 260px;
+      top: -10px;
+      inset-inline-end: -10px;
+      background: radial-gradient(circle, rgba(131, 197, 190, 0.45), rgba(131, 197, 190, 0));
+    }
+
+    .phone-wrap::after {
+      width: 220px;
+      height: 220px;
+      bottom: 0;
+      inset-inline-start: -10px;
+      background: radial-gradient(circle, rgba(226, 149, 120, 0.3), rgba(226, 149, 120, 0));
     }
 
     .phone {
-      width: min(100%, 270px);
-      aspect-ratio: 9 / 18.5;
-      background: var(--bg);
-      border: 9px solid var(--frame);
-      border-radius: 38px;
-      padding: 22px 14px 14px;
+      position: relative;
+      z-index: 1;
+      width: min(100%, 290px);
+      aspect-ratio: 9 / 19;
+      border: 8px solid var(--ink);
+      border-radius: 40px;
+      background: linear-gradient(180deg, var(--pearl-light), var(--bg) 50%, var(--pearl-dark));
+      overflow: hidden;
+      box-shadow: 0 30px 60px -26px rgba(9, 47, 52, 0.55);
+      padding: 16px 12px 0;
       display: flex;
       flex-direction: column;
-      gap: 14px;
-      box-shadow: 0 24px 50px -24px rgba(9, 47, 52, 0.45);
-      overflow: hidden;
-    }
-
-    .ph-hello {
-      font-family: var(--font-display);
-      font-weight: 600;
-      font-size: 1.15rem;
-      line-height: 1.3;
-    }
-
-    .ph-date {
-      color: var(--ink-3);
-      font-size: 0.78rem;
-      margin-top: 2px;
-    }
-
-    .ph-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 12px 14px;
-    }
-
-    .ph-row {
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.8rem;
-      color: var(--ink-2);
-    }
-
-    .ph-row b {
-      font-family: var(--font-display);
-      font-weight: 600;
-      color: var(--ink);
-    }
-
-    .bar {
-      height: 8px;
-      border-radius: 99px;
-      background: var(--tile);
-      margin-top: 10px;
-      overflow: hidden;
-    }
-
-    .bar i {
-      display: block;
-      height: 100%;
-      width: 50%;
-      background: var(--accent);
-      border-radius: 99px;
-    }
-
-    .ph-list {
-      display: grid;
-      gap: 8px;
-    }
-
-    .ph-task {
-      display: flex;
-      align-items: center;
       gap: 10px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 9px 12px;
-      font-size: 0.82rem;
+      font-size: 11px;
+      line-height: 1.4;
     }
 
-    .ph-task .dot {
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
-      border: 2px solid var(--ink-3);
-      flex: none;
-    }
-
-    .ph-task.done .dot {
-      background: var(--accent);
-      border-color: var(--accent);
-    }
-
-    .ph-task.done span {
-      color: var(--ink-3);
-      text-decoration: line-through;
-    }
-
-    .ph-streak {
+    .p-head {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      font-size: 0.8rem;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 9px 12px;
+      gap: 8px;
+      padding-inline: 4px;
     }
 
-    .ph-streak .flame {
-      color: var(--warm);
-      font-family: var(--font-display);
-      font-weight: 600;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .ph-streak svg {
-      width: 14px;
-      height: 14px;
-    }
-
-    .ph-nav {
-      margin-top: auto;
-      display: flex;
-      justify-content: space-between;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 8px 10px;
-      font-size: 0.7rem;
-      color: var(--ink-3);
-    }
-
-    .ph-nav .on {
-      color: var(--accent);
+    .p-date {
+      color: var(--ink-2);
+      font-size: 9.5px;
       font-weight: 500;
     }
 
-    /* sections */
+    .p-hi {
+      font-size: 17px;
+      font-weight: 700;
+      line-height: 1.25;
+    }
+
+    .p-moon {
+      width: 34px;
+      height: 34px;
+      border-radius: 12px;
+      flex: none;
+      background: linear-gradient(225deg, var(--accent), var(--accent-dark));
+      box-shadow: 0 6px 12px -3px rgba(0, 109, 119, 0.4);
+      display: grid;
+      place-items: center;
+      color: #fff;
+    }
+
+    .p-moon svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .p-card {
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      border-radius: 18px;
+      color: #fff;
+      background: linear-gradient(225deg, var(--accent), var(--accent-dark));
+      box-shadow: 0 10px 18px -8px rgba(0, 109, 119, 0.5);
+    }
+
+    .p-card::before,
+    .p-card::after {
+      content: "";
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .p-card::before {
+      width: 70px;
+      height: 70px;
+      top: -26px;
+      inset-inline-end: -14px;
+    }
+
+    .p-card::after {
+      width: 56px;
+      height: 56px;
+      bottom: -28px;
+      inset-inline-start: -10px;
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .ring {
+      position: relative;
+      width: 48px;
+      height: 48px;
+      flex: none;
+    }
+
+    .ring svg {
+      width: 100%;
+      height: 100%;
+      transform: rotate(-90deg);
+    }
+
+    .ring span {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      font-size: 10.5px;
+    }
+
+    .p-card b {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      position: relative;
+    }
+
+    .p-card small {
+      font-size: 10px;
+      opacity: 0.85;
+      position: relative;
+    }
+
+    .p-sec {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 700;
+      font-size: 12.5px;
+      padding-inline: 4px;
+    }
+
+    .p-sec i {
+      font-style: normal;
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--accent);
+      background: rgba(0, 109, 119, 0.12);
+      border-radius: 99px;
+      padding: 0 7px;
+    }
+
+    .p-list {
+      display: grid;
+      gap: 7px;
+    }
+
+    .tile {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 12px 9px 8px;
+      padding-inline-start: 8px;
+      padding-inline-end: 14px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: linear-gradient(225deg, var(--surface), rgba(0, 109, 119, 0.06));
+      overflow: hidden;
+    }
+
+    .tile::before {
+      content: "";
+      position: absolute;
+      inset-block: 0;
+      inset-inline-end: 0;
+      width: 4px;
+      background: linear-gradient(180deg, var(--accent-light), var(--accent));
+    }
+
+    .tile.done {
+      border-color: rgba(78, 139, 120, 0.3);
+      background: linear-gradient(225deg, #EAF3F0, #F5FAF8);
+    }
+
+    .tile.done::before {
+      background: linear-gradient(180deg, var(--success-light), var(--success));
+    }
+
+    .tile.late {
+      border-color: rgba(201, 111, 98, 0.4);
+    }
+
+    .tile.late::before {
+      background: linear-gradient(180deg, var(--danger), var(--warm));
+    }
+
+    .check {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 2px solid var(--ink-3);
+      flex: none;
+      display: grid;
+      place-items: center;
+    }
+
+    .done .check {
+      border: 0;
+      background: linear-gradient(225deg, var(--success-light), var(--success));
+      box-shadow: 0 3px 7px rgba(78, 139, 120, 0.4);
+      color: #fff;
+    }
+
+    .check svg {
+      width: 13px;
+      height: 13px;
+    }
+
+    .t-body {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .t-name {
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1.3;
+    }
+
+    .done .t-name {
+      color: var(--ink-3);
+      text-decoration: line-through;
+      text-decoration-color: var(--success);
+      text-decoration-thickness: 2px;
+    }
+
+    .t-meta {
+      font-size: 9.5px;
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    .done .t-meta {
+      color: var(--success);
+    }
+
+    .late .t-meta {
+      color: var(--danger);
+    }
+
+    .t-time {
+      flex: none;
+      text-align: center;
+      font-size: 9px;
+      font-weight: 700;
+      line-height: 1.3;
+      color: var(--accent);
+      background: rgba(0, 109, 119, 0.1);
+      border: 1px solid rgba(0, 109, 119, 0.25);
+      border-radius: 10px;
+      padding: 4px 7px;
+    }
+
+    .done .t-time {
+      color: var(--ink-3);
+      background: rgba(120, 146, 148, 0.1);
+      border-color: rgba(120, 146, 148, 0.25);
+    }
+
+    .p-fab {
+      position: absolute;
+      bottom: 66px;
+      inset-inline-end: 12px;
+      width: 38px;
+      height: 38px;
+      border-radius: 13px;
+      background: linear-gradient(225deg, var(--accent), var(--accent-dark));
+      box-shadow: 0 8px 14px -4px rgba(0, 109, 119, 0.45);
+      display: grid;
+      place-items: center;
+      color: var(--on-accent);
+    }
+
+    .p-fab svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .p-nav {
+      position: absolute;
+      inset-inline: 12px;
+      bottom: 10px;
+      display: flex;
+      justify-content: space-around;
+      padding: 7px 4px;
+      border-radius: 22px;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.82);
+      backdrop-filter: blur(10px);
+      font-size: 8.5px;
+      font-weight: 500;
+      color: var(--ink-3);
+    }
+
+    .p-nav span {
+      display: grid;
+      justify-items: center;
+      gap: 1px;
+    }
+
+    .p-nav svg {
+      width: 17px;
+      height: 17px;
+    }
+
+    .p-nav .on {
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    /* ---------- shared section bits ---------- */
     .sec-head {
       display: grid;
-      gap: 8px;
-      margin-bottom: 26px;
+      gap: 6px;
+      margin-bottom: 24px;
     }
 
     .sec-head h2 {
       font-size: clamp(1.5rem, 3.2vw, 2rem);
-      font-weight: 600;
+      font-weight: 700;
       line-height: 1.3;
     }
 
     .sec-head p {
       color: var(--ink-2);
-      max-width: 36em;
+      max-width: 38em;
     }
 
-    .features {
+    .gicon {
+      width: 52px;
+      height: 52px;
+      border-radius: 17px;
+      flex: none;
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-      gap: 16px;
+      place-items: center;
+      color: var(--on-accent);
+      background: linear-gradient(225deg, var(--accent), var(--accent-dark));
+      box-shadow: 0 8px 16px -6px rgba(0, 109, 119, 0.5);
     }
 
-    .feat {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      padding: 22px;
+    .gicon svg {
+      width: 26px;
+      height: 26px;
+    }
+
+    /* ---------- what's new: the app's big gradient card ---------- */
+    .new {
+      position: relative;
+      overflow: hidden;
+      border-radius: 32px;
+      padding: clamp(22px, 4vw, 38px);
+      color: #fff;
+      background: linear-gradient(225deg, var(--accent), var(--accent-dark));
+      box-shadow: 0 16px 34px -10px rgba(0, 109, 119, 0.45);
+    }
+
+    .new::before,
+    .new::after {
+      content: "";
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.07);
+      pointer-events: none;
+    }
+
+    .new::before {
+      width: 280px;
+      height: 280px;
+      top: -110px;
+      inset-inline-end: -70px;
+    }
+
+    .new::after {
+      width: 220px;
+      height: 220px;
+      bottom: -110px;
+      inset-inline-start: -50px;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .new>* {
+      position: relative;
+    }
+
+    .new .sec-head p {
+      color: rgba(255, 255, 255, 0.85);
+    }
+
+    .ver {
+      justify-self: start;
+      font-family: var(--mono);
+      direction: ltr;
+      unicode-bidi: isolate;
+      font-size: 0.82rem;
+      background: rgba(255, 255, 255, 0.18);
+      border-radius: 99px;
+      padding: 0 12px;
+    }
+
+    .new-grid {
       display: grid;
-      gap: 12px;
-      align-content: start;
-      min-width: 0;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 14px;
     }
 
-    .feat .ic {
-      width: 46px;
-      height: 46px;
-      border-radius: 13px;
-      background: var(--tile);
-      color: var(--accent);
+    .new-item {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      background: rgba(255, 255, 255, 0.14);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 22px;
+      padding: 16px;
+    }
+
+    .new-item .ic {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      flex: none;
+      background: rgba(255, 255, 255, 0.2);
       display: grid;
       place-items: center;
     }
 
-    .feat .ic svg {
-      width: 24px;
-      height: 24px;
+    .new-item .ic svg {
+      width: 23px;
+      height: 23px;
     }
 
-    .feat h3 {
-      font-size: 1.1rem;
-      font-weight: 600;
+    .new-item h3 {
+      font-size: 1.02rem;
+      font-weight: 700;
     }
 
-    .feat p {
+    .new-item p {
+      margin-top: 2px;
+      font-size: 0.9rem;
+      line-height: 1.6;
+      color: rgba(255, 255, 255, 0.86);
+    }
+
+    /* ---------- feature + step tiles: same card as a task tile ---------- */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 16px;
+    }
+
+    .card {
+      position: relative;
+      overflow: hidden;
+      min-width: 0;
+      display: grid;
+      gap: 14px;
+      align-content: start;
+      padding: 22px 26px 22px 22px;
+      padding-inline-end: 28px;
+      border-radius: 26px;
+      border: 1px solid var(--border);
+      background: linear-gradient(225deg, var(--surface), rgba(0, 109, 119, 0.07));
+      box-shadow: 0 10px 22px -10px rgba(0, 109, 119, 0.28);
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      inset-block: 0;
+      inset-inline-end: 0;
+      width: 6px;
+      background: linear-gradient(180deg, var(--accent-light), var(--accent));
+    }
+
+    .card h3 {
+      font-size: 1.12rem;
+      font-weight: 700;
+    }
+
+    .card p {
       color: var(--ink-2);
-      font-size: 0.97rem;
+      font-size: 0.95rem;
     }
 
     .steps {
       list-style: none;
       margin: 0;
       padding: 0;
-      counter-reset: step;
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-      gap: 28px 24px;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 16px;
     }
 
-    .steps li {
-      counter-increment: step;
-      display: grid;
-      gap: 8px;
-      align-content: start;
-      min-width: 0;
-      border-top: 2px solid var(--line);
-      padding-top: 16px;
+    .steps .card {
+      grid-template-columns: auto 1fr;
+      align-items: start;
+      column-gap: 14px;
+      row-gap: 4px;
+      padding-block: 18px;
     }
 
-    .steps li::before {
-      content: counter(step, arabic-indic);
-      font-family: var(--font-display);
+    .steps .card::before {
+      background: linear-gradient(180deg, var(--success-light), var(--success));
+    }
+
+    .n {
+      grid-row: span 2;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
       font-weight: 700;
-      font-size: 1.8rem;
-      line-height: 1;
-      color: var(--accent);
-    }
-
-    .steps h3 {
-      font-size: 1.05rem;
-      font-weight: 600;
-    }
-
-    .steps p {
-      color: var(--ink-2);
-      font-size: 0.95rem;
+      color: #fff;
+      background: linear-gradient(225deg, var(--success-light), var(--success));
+      box-shadow: 0 5px 12px rgba(78, 139, 120, 0.4);
     }
 
     .note {
-      margin-top: 26px;
-      background: var(--tile);
-      border-radius: 14px;
+      margin-top: 22px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(226, 149, 120, 0.14);
+      border: 1px solid rgba(226, 149, 120, 0.35);
+      border-radius: 18px;
       padding: 14px 18px;
-      color: var(--ink);
       font-size: 0.95rem;
+      font-weight: 500;
     }
 
-    /* footer */
+    .note svg {
+      width: 22px;
+      height: 22px;
+      flex: none;
+      color: var(--warm);
+    }
+
+    /* ---------- footer ---------- */
     .foot {
-      border-top: 1px solid var(--line);
-      padding-top: 24px;
       display: flex;
       flex-wrap: wrap;
       justify-content: space-between;
       align-items: center;
       gap: 12px 24px;
+      padding: 18px 22px;
+      border-radius: 24px;
+      background: var(--surface);
+      border: 1px solid var(--border);
       color: var(--ink-2);
       font-size: 0.92rem;
     }
@@ -491,7 +838,7 @@
     }
 
     .mail {
-      font-family: var(--font-mono);
+      font-family: var(--mono);
       direction: ltr;
       unicode-bidi: isolate;
       font-size: 0.88rem;
@@ -501,11 +848,12 @@
     .copy {
       font: inherit;
       font-size: 0.85rem;
+      font-weight: 600;
       color: var(--accent);
-      background: transparent;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 3px 12px;
+      background: rgba(0, 109, 119, 0.08);
+      border: 1px solid transparent;
+      border-radius: 12px;
+      padding: 4px 14px;
       cursor: pointer;
     }
 
@@ -515,7 +863,7 @@
 
     @media (max-width: 760px) {
       .page {
-        gap: 56px;
+        gap: 52px;
       }
 
       .hero {
@@ -525,7 +873,6 @@
 
       .btn {
         width: 100%;
-        justify-content: center;
       }
     }
 
@@ -538,176 +885,337 @@
 </head>
 
 <body>
-  <div class="page" dir="rtl" lang="ar">
-    <header class="top">
-      <a class="brand" href="#top" aria-label="مسار">
-        <img src="icon.png" alt="" width="44" height="44">
-        <span>مسار</span>
-      </a>
-      <a class="src" href="https://github.com/sifeemad123/Masar" target="_blank" rel="noopener">GitHub Repository</a>
-    </header>
+<div class="page" dir="rtl" lang="ar">
+  <header class="top">
+    <a class="brand" href="#top" aria-label="مسار">
+      <img src="icon.png" alt="" width="48" height="48">
+      <span>مسار</span>
+    </a>
+    <a class="src" href="https://github.com/sifeemad123/Masar" target="_blank" rel="noopener">GitHub Repository</a>
+  </header>
 
-    <section class="hero" id="top">
-      <div>
-        <p class="eyebrow">تطبيق أندرويد</p>
-        <h1>نظّم يومك في مكان واحد وهادي</h1>
-        <p class="lead">مسار هو رفيقك اليومي عشان تنظم حياتك.. تاسكاتك، عاداتك، ومذاكرتك في مكان واحد بسيط</p>
-        <div class="cta">
-          <!-- masar.apk must sit in the same folder as this file. Same-origin is what makes `download` work. -->
-          <a class="btn" href="masar.apk" download="masar.apk">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-              stroke-linejoin="round" aria-hidden="true">
-              <path d="M12 3v12" />
-              <path d="m7 11 5 5 5-5" />
-              <path d="M5 20h14" />
-            </svg>
-            تحميل مسار (APK)
-          </a>
-        </div>
-        <p class="meta">
-          <span><b>الإصدار</b> <span class="num">1.0.0</span></span>
-          <span><b>النظام</b> أندرويد</span>
-          <span><b>الشغل</b> أوفلاين بالكامل</span>
-        </p>
+  <section class="hero" id="top">
+    <div>
+      <span class="chip">تطبيق أندرويد <b>v1.1.0</b></span>
+      <h1>نظّم يومك في مكان واحد وهادي</h1>
+      <p class="lead">مسار هو رفيقك اليومي عشان تنظم حياتك.. تاسكاتك، عاداتك، ومذاكرتك في مكان واحد بسيط، وبشكل جديد وحركة أسلس</p>
+      <div class="cta">
+        <!-- masar.apk must sit in the same folder as this file. Same-origin is what makes `download` work. -->
+        <a class="btn" href="masar.apk" download="masar.apk">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+               stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 3v12" />
+            <path d="m7 11 5 5 5-5" />
+            <path d="M5 20h14" />
+          </svg>
+          تحميل مسار (APK)
+        </a>
       </div>
+      <div class="pills">
+        <span class="pill">الإصدار <span class="num">1.1.0</span></span>
+        <span class="pill">أندرويد</span>
+        <span class="pill">أوفلاين بالكامل</span>
+      </div>
+    </div>
 
-      <div class="phone-wrap" aria-hidden="true">
-        <div class="phone">
+    <div class="phone-wrap" aria-hidden="true">
+      <div class="phone">
+        <div class="p-head">
           <div>
-            <div class="ph-hello">صباح الخير</div>
-            <div class="ph-date">الجمعة، 16 أكتوبر</div>
+            <div class="p-date">السبت، ١٤ نوفمبر</div>
+            <div class="p-hi">مساء الخير سيف</div>
           </div>
-          <div class="ph-card">
-            <div class="ph-row"><span>تاسكات انهارده</span><b>خلصت 2 من 4</b></div>
-            <div class="bar"><i></i></div>
-          </div>
-          <div class="ph-list">
-            <div class="ph-task done"><i class="dot"></i><span>مراجعة درس الفيزياء</span></div>
-            <div class="ph-task done"><i class="dot"></i><span>الرد على الإيميلات</span></div>
-            <div class="ph-task"><i class="dot"></i><span>حل واجب الرياضيات</span></div>
-            <div class="ph-task"><i class="dot"></i><span>مشي نص ساعة</span></div>
-          </div>
-          <div class="ph-streak">
-            <span>قراءة قبل النوم</span>
-            <span class="flame"><svg viewBox="0 0 24 24" fill="currentColor">
-                <path
-                  d="M12 2c1 3.5-1 5-2.5 7C8 11 7 12.5 7 15a5 5 0 0 0 10 0c0-2-1-3.3-2-4.5 0 1.5-.8 2.5-1.8 2.5.5-3-.2-7.5-1.2-11Z" />
-              </svg>7</span>
-          </div>
-          <div class="ph-nav">
-            <span class="on">اليوم</span><span>مهام</span><span>عادات</span><span>المواد</span><span>إعدادات</span>
+          <div class="p-moon">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M20 14.5A8 8 0 0 1 9.5 4 8.5 8.5 0 1 0 20 14.5Z" />
+            </svg>
           </div>
         </div>
-      </div>
-    </section>
 
-    <section>
-      <div class="sec-head">
-        <h2>كل اللي محتاجه ليومك</h2>
-        <p>أربع حاجات بسيطة، من غير حسابات ولا سيرفر. بياناتك بتفضل على جهازك.</p>
-      </div>
-      <div class="features">
-        <article class="feat">
-          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <rect x="3.5" y="5" width="17" height="15.5" rx="3" />
-              <path d="M3.5 10h17" />
-              <path d="M8 3v4" />
-              <path d="M16 3v4" />
-            </svg></div>
-          <h3>تاسكات اليوم</h3>
-          <p>ضيف مهامك بتاريخ ووقت، وهيجيلك تذكير في ميعادها. اللي بتخلصه بيتشال تلقائي بعد يوم.</p>
-        </article>
-        <article class="feat">
-          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M12 3c3.5 4 6 6.5 6 10.5a6 6 0 0 1-12 0C6 10.5 8 9 9 6.5c1 .8 1.5 1.8 1.5 3C12 8 12 5.5 12 3Z" />
-            </svg></div>
-          <h3>عادات بستريك</h3>
-          <p>سجّل عاداتك كل يوم وشوف الستريك بتاعك بيكبر. لو فاتك يوم من غير ما تسجل، بيبدأ من الأول.</p>
-        </article>
-        <article class="feat">
-          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5v-15Z" />
-              <path d="M4 20.5A2.5 2.5 0 0 0 6.5 23H20v-5" />
-            </svg></div>
-          <h3>المواد والدروس</h3>
-          <p>رتّب مواد الدراسة، وكل مادة فيها دروسها، وتعلّم على اللي خلصته بس بضغطة.</p>
-        </article>
-        <article class="feat">
-          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M5 4h14v10l-6 6H5V4Z" />
-              <path d="M13 20v-6h6" />
-              <path d="M9 9h6" />
-            </svg></div>
-          <h3>ملاحظات لكل درس</h3>
-          <p>اكتب نوتس بألوان مختلفة جوه كل درس، وشاركها مع زمايلك لما تحتاج.</p>
-        </article>
-      </div>
-    </section>
+        <div class="p-card">
+          <div class="ring">
+            <svg viewBox="0 0 48 48">
+              <circle cx="24" cy="24" r="19" fill="none" stroke="rgba(255,255,255,.22)" stroke-width="5" />
+              <circle cx="24" cy="24" r="19" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"
+                      stroke-dasharray="80 120" />
+            </svg>
+            <span>67%</span>
+          </div>
+          <div>
+            <b>خلصت 2 من 3</b>
+            <small>كمّل يومك</small>
+          </div>
+        </div>
 
-    <section>
-      <div class="sec-head">
-        <h2>التثبيت في أربع خطوات</h2>
-        <p>التطبيق بيتثبت من ملف APK مباشرة، من غير Google Play.</p>
-      </div>
-      <ol class="steps">
-        <li>
-          <h3>نزّل الملف</h3>
-          <p>اضغط زرار التحميل فوق واستنى لحد ما ملف masar.apk ينزل على موبايلك.</p>
-        </li>
-        <li>
-          <h3>افتح الملف</h3>
-          <p>افتحه من إشعار التحميل أو من مجلد Downloads في الموبايل.</p>
-        </li>
-        <li>
-          <h3>اسمح بالتثبيت</h3>
-          <p>لو ظهرتلك رسالة عن مصدر غير معروف، فعّل السماح بالتثبيت للمتصفح اللي نزّلت منه.</p>
-        </li>
-        <li>
-          <h3>ثبّت وافتح مسار</h3>
-          <p>اضغط تثبيت، وبعدين افتح التطبيق واكتب اسمك، ووافق على إذن الإشعارات عشان توصلك التذكيرات.</p>
-        </li>
-      </ol>
-      <p class="note">مسار شغال على أندرويد حالياً. نسخة آيفون لسه مش متاحة.</p>
-    </section>
+        <div class="p-sec">مهام النهاردة <i>3</i></div>
 
-    <footer class="foot">
-      <div class="who">
-        <span class="mail" id="mail">sifeemad12345@gmail.com</span>
-        <button class="copy" id="copy" type="button">Copy Email</button>
-        <span>Developer : Saif Emad</span>
-      </div>
-      <span>Masar 2026 ©</span>
-    </footer>
-  </div>
+        <div class="p-list">
+          <div class="tile done">
+              <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+                                       stroke-linecap="round" stroke-linejoin="round">
+                  <path d="m5 12 5 5 9-10" />
+                </svg></span>
+            <div class="t-body">
+              <div class="t-name">صحيت</div>
+              <div class="t-meta">خلصت</div>
+            </div>
+            <div class="t-time">٨:٣٠ ص</div>
+          </div>
+          <div class="tile done">
+              <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+                                       stroke-linecap="round" stroke-linejoin="round">
+                  <path d="m5 12 5 5 9-10" />
+                </svg></span>
+            <div class="t-body">
+              <div class="t-name">انزل</div>
+              <div class="t-meta">خلصت</div>
+            </div>
+            <div class="t-time">٨:٥٠ ص</div>
+          </div>
+          <div class="tile late">
+            <span class="check"></span>
+            <div class="t-body">
+              <div class="t-name">اذاكر</div>
+              <div class="t-meta">متأخرة من 7 ساعة</div>
+            </div>
+            <div class="t-time">١١:٠٠ ص</div>
+          </div>
+        </div>
 
-  <script>
-    (function () {
-      var btn = document.getElementById('copy');
-      var mail = document.getElementById('mail');
-      function selectMail() {
-        var r = document.createRange();
-        r.selectNodeContents(mail);
-        var s = window.getSelection();
-        s.removeAllRanges();
-        s.addRange(r);
+        <div class="p-fab">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">
+            <path d="M12 5v14M5 12h14" />
+          </svg>
+        </div>
+
+        <div class="p-nav">
+            <span class="on">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path
+                        d="M7 2h2v2h6V2h2v2h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2V2Zm-2 8v10h14V10H5Z" />
+              </svg>اليوم</span>
+          <span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                   stroke-linejoin="round">
+                <path d="m4 6 2 2 3-3M4 14l2 2 3-3M13 7h7M13 15h7" />
+              </svg>المهام</span>
+          <span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round">
+                <path d="M12 3c3 4 6 7 6 11a6 6 0 0 1-12 0c0-4 3-7 6-11Z" />
+              </svg>العادات</span>
+          <span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round">
+                <path d="M4 5h6a2 2 0 0 1 2 2v13a2 2 0 0 0-2-2H4V5ZM20 5h-6a2 2 0 0 0-2 2v13a2 2 0 0 1 2-2h6V5Z" />
+              </svg>المواد</span>
+          <span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                   stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3" />
+                <path
+                        d="M19 12a7 7 0 0 0-.1-1.2l2-1.5-2-3.5-2.4 1a7 7 0 0 0-2-1.2L14 3h-4l-.4 2.6a7 7 0 0 0-2 1.2l-2.4-1-2 3.5 2 1.5a7 7 0 0 0 0 2.4l-2 1.5 2 3.5 2.4-1a7 7 0 0 0 2 1.2L10 21h4l.4-2.6a7 7 0 0 0 2-1.2l2.4 1 2-3.5-2-1.5c.1-.4.2-.8.2-1.2Z" />
+              </svg>الإعدادات</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="new">
+    <div class="sec-head">
+      <span class="ver">v1.1.0</span>
+      <h2>الجديد في هذا الإصدار</h2>
+      <p>تصميم جديد بالكامل، وتذكيرات أذكى، وأدوات تخلي مذاكرتك أسهل.</p>
+    </div>
+    <div class="new-grid">
+      <article class="new-item">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8L12 3Z" />
+          <path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15Z" />
+        </svg></div>
+        <div>
+          <h3>تصميم وحركة جديدين</h3>
+          <p>واجهة جديدة بألوان هادية وانتقالات سلسة في كل الشاشات، من اليوم لحد الملاحظات.</p>
+        </div>
+      </article>
+      <article class="new-item">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M6 17V11a6 6 0 0 1 12 0v6l1.5 2h-15L6 17Z" />
+          <path d="M10 21a2 2 0 0 0 4 0" />
+        </svg></div>
+        <div>
+          <h3>تذكيرات بأزرار سريعة</h3>
+          <p>رد على التذكير من الإشعار نفسه: خلصت المهمة، أو ذكّرني بعد 5 دقايق. وكمان تنبيه بوقت البداية.</p>
+        </div>
+      </article>
+      <article class="new-item">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="13" r="7" />
+          <path d="M12 9.5V13l2.5 1.5" />
+          <path d="M9 3h6" />
+        </svg></div>
+        <div>
+          <h3>تنبيه لكل عادة</h3>
+          <p>اختار وقت تنبيه يومي لكل عادة، وسجّل إنجازها من الإشعار من غير ما تفتح التطبيق.</p>
+        </div>
+      </article>
+      <article class="new-item">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="6.5" />
+          <path d="m16 16 4.5 4.5" />
+        </svg></div>
+        <div>
+          <h3>بحث في المواد</h3>
+          <p>دوّر على أي مادة باسمها أو وصفها أو اسم المدرس، والنتيجة تظهر وانت بتكتب.</p>
+        </div>
+      </article>
+      <article class="new-item">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 3v12" />
+          <path d="m8 7 4-4 4 4" />
+          <path d="M5 13v6a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-6" />
+        </svg></div>
+        <div>
+          <h3>مشاركة الملاحظات</h3>
+          <p>ابعت أي ملاحظة أو رسالة تحفيزية لزمايلك بضغطة واحدة من قائمة المشاركة.</p>
+        </div>
+      </article>
+      <article class="new-item">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M4 5h16v11H9l-5 4V5Z" />
+          <path d="M8.5 9.5h7" />
+          <path d="M8.5 12.5h4" />
+        </svg></div>
+        <div>
+          <h3>رسائل مسار التحفيزية</h3>
+          <p>فعّلها من الإعدادات، وهتوصلك رسالة خفيفة خلال اليوم تشجعك تكمّل.</p>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <h2>كل اللي محتاجه ليومك</h2>
+      <p>أربع حاجات بسيطة، من غير حسابات ولا سيرفر. بياناتك بتفضل على جهازك.</p>
+    </div>
+    <div class="grid">
+      <article class="card">
+        <div class="gicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="3.5" y="5" width="17" height="15.5" rx="3" />
+          <path d="M3.5 10h17" />
+          <path d="M8 3v4" />
+          <path d="M16 3v4" />
+        </svg></div>
+        <h3>تاسكات اليوم</h3>
+        <p>ضيف مهامك بوقت بداية وموعد نهائي، وهيجيلك تذكير في الميعادين. اللي بتخلصه بيتشال تلقائي بعد يوم.</p>
+      </article>
+      <article class="card">
+        <div class="gicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 3c3.5 4 6 6.5 6 10.5a6 6 0 0 1-12 0C6 10.5 8 9 9 6.5c1 .8 1.5 1.8 1.5 3C12 8 12 5.5 12 3Z" />
+        </svg></div>
+        <h3>عادات بستريك</h3>
+        <p>سجّل عاداتك كل يوم وشوف الستريك بتاعك بيكبر. لو فاتك يوم من غير ما تسجل، بيبدأ من الأول.</p>
+      </article>
+      <article class="card">
+        <div class="gicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5v-15Z" />
+          <path d="M4 20.5A2.5 2.5 0 0 0 6.5 23H20v-5" />
+        </svg></div>
+        <h3>المواد والدروس</h3>
+        <p>رتّب مواد الدراسة، وكل مادة فيها دروسها، وتعلّم على اللي خلصته بس بضغطة، وتابع نسبة تقدمك.</p>
+      </article>
+      <article class="card">
+        <div class="gicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M5 4h14v10l-6 6H5V4Z" />
+          <path d="M13 20v-6h6" />
+          <path d="M9 9h6" />
+        </svg></div>
+        <h3>ملاحظات لكل درس</h3>
+        <p>اكتب نوتس بعنوان ووصف ومحتوى، واختار لكل واحدة لون من 24 لون، وشاركها مع زمايلك لما تحتاج.</p>
+      </article>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <h2>التثبيت في أربع خطوات</h2>
+      <p>التطبيق بيتثبت من ملف APK مباشرة، من غير Google Play. لو عندك نسخة قديمة، ثبّت الجديدة فوقها وبياناتك هتفضل زي ما هي.</p>
+    </div>
+    <ol class="steps">
+      <li class="card">
+        <span class="n">١</span>
+        <h3>نزّل الملف</h3>
+        <p>اضغط زرار التحميل فوق واستنى لحد ما ملف masar.apk ينزل على موبايلك.</p>
+      </li>
+      <li class="card">
+        <span class="n">٢</span>
+        <h3>افتح الملف</h3>
+        <p>افتحه من إشعار التحميل أو من مجلد Downloads في الموبايل.</p>
+      </li>
+      <li class="card">
+        <span class="n">٣</span>
+        <h3>اسمح بالتثبيت</h3>
+        <p>لو ظهرتلك رسالة عن مصدر غير معروف، فعّل السماح بالتثبيت للمتصفح اللي نزّلت منه.</p>
+      </li>
+      <li class="card">
+        <span class="n">٤</span>
+        <h3>ثبّت وافتح مسار</h3>
+        <p>اضغط تثبيت، وبعدين افتح التطبيق واكتب اسمك، ووافق على إذن الإشعارات والمنبهات عشان توصلك التذكيرات في ميعادها.</p>
+      </li>
+    </ol>
+    <p class="note">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+           stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="9" />
+        <path d="M12 8v5M12 16.5v.01" />
+      </svg>
+      مسار شغال على أندرويد حالياً. نسخة آيفون لسه مش متاحة.
+    </p>
+  </section>
+
+  <footer class="foot">
+    <div class="who">
+      <span class="mail" id="mail">sifeemad12345@gmail.com</span>
+      <button class="copy" id="copy" type="button">Copy Email</button>
+      <span>Developer : Saif Emad</span>
+    </div>
+    <span>Masar 2026 ©</span>
+  </footer>
+</div>
+
+<script>
+  (function () {
+    var btn = document.getElementById('copy');
+    var mail = document.getElementById('mail');
+    function selectMail() {
+      var r = document.createRange();
+      r.selectNodeContents(mail);
+      var s = window.getSelection();
+      s.removeAllRanges();
+      s.addRange(r);
+    }
+    btn.addEventListener('click', function () {
+      var done = function () {
+        btn.textContent = 'Copied';
+        setTimeout(function () { btn.textContent = 'Copy Email'; }, 1800);
+      };
+      try {
+        navigator.clipboard.writeText(mail.textContent).then(done, selectMail);
+      } catch (e) {
+        selectMail();
       }
-      btn.addEventListener('click', function () {
-        var done = function () {
-          btn.textContent = 'Copied';
-          setTimeout(function () { btn.textContent = 'Copy Email'; }, 1800);
-        };
-        try {
-          navigator.clipboard.writeText(mail.textContent).then(done, selectMail);
-        } catch (e) {
-          selectMail();
-        }
-      });
-    })();
-  </script>
+    });
+  })();
+</script>
 </body>
 
 </html>

@@ -249,6 +249,9 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
         padding: const EdgeInsets.fromLTRB(20, 18, 20, 4),
         child: TextField(
           controller: _searchController,
+          textInputAction: TextInputAction.search,
+          onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+          onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
           onChanged: (v) => setState(() => _query = v),
           style: const TextStyle(
             color: AppColors.textPrimary,

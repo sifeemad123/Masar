@@ -20,7 +20,7 @@ class TasksModelAdapter extends TypeAdapter<TasksModel> {
       ..taskName = fields[0] as String
       ..completed = fields[1] as bool
       ..taskDate = fields[2] as DateTime
-      ..startDate = fields[3] as DateTime;
+      ..startDate = fields[3] as DateTime?;
   }
 
   @override
