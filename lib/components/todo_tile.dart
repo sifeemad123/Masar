@@ -1,15 +1,23 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:masar/components/motion.dart';
 import 'package:masar/theme/AppColors.dart';
 
-class TodoTile extends StatelessWidget {
+class TodoTile extends StatefulWidget {
   final String taskName;
   final bool value;
   final DateTime time;
-  Function(bool?)? onChanged;
-  Function(BuildContext)? deleteTask;
-  Function(BuildContext)? updateTask;
-  TodoTile({
+  final Function(bool?)? onChanged;
+  final Function(BuildContext)? deleteTask;
+  final Function(BuildContext)? updateTask;
+
+  /// Position in the list, used to stagger the entrance animation.
+  final int index;
+
+  const TodoTile({
     super.key,
     required this.taskName,
     required this.value,
@@ -17,209 +25,449 @@ class TodoTile extends StatelessWidget {
     required this.time,
     required this.deleteTask,
     required this.updateTask,
+    this.index = 0,
   });
 
-  Widget _card({Widget? child, Color? color}) {
-    Color color2 = color ?? AppColors.surface;
-    return Container(
-      width: double.infinity,
-      height: 90,
-      decoration: BoxDecoration(
-        color: color2,
-        border: Border.all(color: AppColors.border),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Center(child: child),
-    );
+  @override
+  State<TodoTile> createState() => _TodoTileState();
+}
+
+class _TodoTileState extends State<TodoTile> with TickerProviderStateMixin {
+  late final AnimationController _enter; // entrance + sheen
+  late final AnimationController _burst; // completion celebration
+  late final AnimationController _pulse; // overdue dot
+
+  String get taskName => widget.taskName;
+  bool get value => widget.value;
+  DateTime get time => widget.time;
+
+  bool get _overdue {
+    final now = DateTime.now();
+    return !value && time.isBefore(DateTime(now.year, now.month, now.day));
   }
 
   @override
-  Widget build(BuildContext context) {
-    final now = DateTime.now();
-    return Padding(
-      padding: const EdgeInsets.only(left: 25, right: 25, top: 25),
-      child: Slidable(
-        endActionPane: ActionPane(
-          motion: StretchMotion(),
+  void initState() {
+    super.initState();
+    _enter = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1100),
+    );
+    _burst = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 650),
+    );
+    _pulse = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    );
+
+    Future.delayed(
+      Duration(milliseconds: math.min(widget.index, 10) * 80),
+          () {
+        if (mounted) _enter.forward();
+      },
+    );
+    _syncPulse();
+  }
+
+  @override
+  void didUpdateWidget(covariant TodoTile oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!oldWidget.value && widget.value) {
+      HapticFeedback.mediumImpact();
+      _burst.forward(from: 0);
+    }
+    _syncPulse();
+  }
+
+  void _syncPulse() {
+    if (_overdue) {
+      if (!_pulse.isAnimating) _pulse.repeat(reverse: true);
+    } else {
+      _pulse.stop();
+    }
+  }
+
+  @override
+  void dispose() {
+    _enter.dispose();
+    _burst.dispose();
+    _pulse.dispose();
+    super.dispose();
+  }
+
+  // ---------------------------------------------------------------
+  // Details sheet
+  // ---------------------------------------------------------------
+
+  void _showDetails(BuildContext context, {required bool overdue}) {
+    final statusColor = value
+        ? AppColors.success
+        : overdue
+        ? AppColors.danger
+        : AppColors.warm;
+    final statusText = value
+        ? "خلصت المهمة"
+        : overdue
+        ? "المهمة متأخرة"
+        : "لسه مخلصتش";
+    final statusIcon = value
+        ? Icons.check_circle_rounded
+        : overdue
+        ? Icons.error_rounded
+        : Icons.pending_rounded;
+
+    Widget infoBox({
+      required IconData icon,
+      required String label,
+      required String text,
+    }) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppColors.overlay,
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: Row(
           children: [
-            SlidableAction(
-              onPressed: deleteTask,
-              icon: Icons.delete_outline,
-              backgroundColor: AppColors.danger,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            SlidableAction(
-              onPressed: updateTask,
-              icon: Icons.edit_rounded,
-              backgroundColor: AppColors.accent,
-              borderRadius: BorderRadius.circular(12),
+            Icon(icon, color: AppColors.accent, size: 26),
+            const SizedBox(width: 14),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: const TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 12,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  text,
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 17,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
             ),
           ],
         ),
-        child: InkWell(
-          onTap: () {
-            showDialog(
-              context: context,
-              builder: (context) {
-                return AlertDialog(
-                  backgroundColor: AppColors.surface,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(24),
+      );
+    }
+
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      builder: (sheetContext) {
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(24, 4, 24, 28),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                "تفاصيل المهمة",
+                style: TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                taskName,
+                style: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 24,
+                  fontWeight: FontWeight.w900,
+                  height: 1.3,
+                ),
+              ),
+              const SizedBox(height: 20),
+              infoBox(
+                icon: Icons.event_rounded,
+                label: "الموعد النهائي",
+                text: "${time.day} / ${time.month} / ${time.year}",
+              ),
+              const SizedBox(height: 12),
+              infoBox(
+                icon: Icons.access_time_rounded,
+                label: "الساعة",
+                text: TimeOfDay.fromDateTime(time).format(sheetContext),
+              ),
+              const SizedBox(height: 12),
+              Container(
+                width: double.infinity,
+                padding:
+                const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+                decoration: BoxDecoration(
+                  color: statusColor.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                child: Row(
+                  children: [
+                    Icon(statusIcon, color: statusColor, size: 26),
+                    const SizedBox(width: 14),
+                    Text(
+                      statusText,
+                      style: const TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 22),
+              Pressable(
+                onTap: () => Navigator.pop(sheetContext),
+                child: Container(
+                  height: 54,
+                  width: double.infinity,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      begin: Alignment.centerRight,
+                      end: Alignment.centerLeft,
+                      colors: [AppColors.accent, AppColors.accentDark],
+                    ),
+                    borderRadius: BorderRadius.circular(18),
                   ),
-                  titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
-                  contentPadding: const EdgeInsets.fromLTRB(24, 12, 24, 8),
-                  actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-
-                  title: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: AppColors.textPrimary.withOpacity(.1),
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        child: Icon(
-                          Icons.task_alt_rounded,
-                          color: AppColors.textPrimary,
-                          size: 28,
-                        ),
-                      ),
-
-                      const SizedBox(width: 12),
-
-                      Text(
-                        "تفاصيل التاسك",
-                        style: TextStyle(
-                          color: AppColors.textPrimary,
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
+                  child: const Text(
+                    "تمام",
+                    style: TextStyle(
+                      color: AppColors.onAccent,
+                      fontSize: 17,
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 
-                  content: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        "اسم التاسك",
-                        style: TextStyle(
-                          color: AppColors.textPrimary.withOpacity(.6),
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                        ),
+  // ---------------------------------------------------------------
+  // Pieces
+  // ---------------------------------------------------------------
+
+  /// "باقي ساعتين" / "متأخرة من يومين" ...
+  String _relative() {
+    if (value) return "خلصت";
+    final diff = time.difference(DateTime.now());
+    if (diff.isNegative) {
+      final late = -diff;
+      if (late.inDays >= 1) return "متأخرة من ${late.inDays} يوم";
+      if (late.inHours >= 1) return "متأخرة من ${late.inHours} ساعة";
+      return "متأخرة";
+    }
+    if (diff.inMinutes < 60) return "باقي ${math.max(diff.inMinutes, 1)} دقيقة";
+    if (diff.inHours < 24) return "باقي ${diff.inHours} ساعة";
+    return "بعد ${diff.inDays} يوم";
+  }
+
+  Widget _checkCircle() {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () {
+        if (!value) {
+          // haptic for completion is fired in didUpdateWidget
+        } else {
+          HapticFeedback.selectionClick();
+        }
+        widget.onChanged?.call(!value);
+      },
+      child: SizedBox(
+        width: 52,
+        height: 52,
+        child: AnimatedBuilder(
+          animation: _burst,
+          builder: (context, _) {
+            final t = _burst.value;
+            final bounce = 1 + 0.28 * math.sin(math.pi * t);
+            return Stack(
+              alignment: Alignment.center,
+              clipBehavior: Clip.none,
+              children: [
+                if (t > 0 && t < 1)
+                  Positioned.fill(
+                    child: CustomPaint(painter: _BurstPainter(t)),
+                  ),
+                Transform.scale(
+                  scale: bounce,
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeOutCubic,
+                    width: 34,
+                    height: 34,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: value
+                          ? const LinearGradient(
+                        begin: Alignment.topRight,
+                        end: Alignment.bottomLeft,
+                        colors: [Color(0xFF3DDC97), AppColors.success],
+                      )
+                          : null,
+                      border: Border.all(
+                        color: value ? Colors.transparent : AppColors.textMuted,
+                        width: 2,
                       ),
-
-                      const SizedBox(height: 6),
-
-                      Text(
-                        taskName,
-                        style: TextStyle(
-                          color: AppColors.textPrimary,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                      boxShadow: value
+                          ? [
+                        BoxShadow(
+                          color:
+                          AppColors.success.withValues(alpha: 0.4),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
                         ),
+                      ]
+                          : const [],
+                    ),
+                    child: AnimatedScale(
+                      scale: value ? 1 : 0,
+                      duration: const Duration(milliseconds: 320),
+                      curve: Curves.easeOutBack,
+                      child: const Icon(
+                        Icons.check_rounded,
+                        size: 21,
+                        color: Colors.white,
                       ),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
 
-                      const SizedBox(height: 20),
+  Widget _metaRow(Color color) {
+    final now = DateTime.now();
+    final sameDay = DateUtils.isSameDay(time, now);
+    final rel = _relative();
 
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: AppColors.textPrimary.withOpacity(.06),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.access_time_rounded,
-                              color: AppColors.textPrimary,
-                              size: 26,
-                            ),
+    return Row(
+      children: [
+        if (_overdue)
+          AnimatedBuilder(
+            animation: _pulse,
+            builder: (context, _) => Container(
+              width: 8,
+              height: 8,
+              margin: const EdgeInsetsDirectional.only(end: 6),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: color,
+                boxShadow: [
+                  BoxShadow(
+                    color: color.withValues(alpha: 0.55 * _pulse.value),
+                    blurRadius: 3 + 8 * _pulse.value,
+                    spreadRadius: 1 + 2 * _pulse.value,
+                  ),
+                ],
+              ),
+            ),
+          )
+        else
+          Padding(
+            padding: const EdgeInsetsDirectional.only(end: 5),
+            child: Icon(
+              value ? Icons.celebration_rounded : Icons.timelapse_rounded,
+              size: 15,
+              color: color,
+            ),
+          ),
+        Flexible(
+          child: Text(
+            sameDay || value ? rel : "$rel • ${time.day}/${time.month}",
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: color,
+              fontSize: 12.5,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 
-                            const SizedBox(width: 12),
+  Widget _timeBadge(BuildContext context, Color color) {
+    final text = TimeOfDay.fromDateTime(time).format(context);
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 8),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: color.withValues(alpha: 0.25)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.schedule_rounded, size: 15, color: color),
+          const SizedBox(height: 3),
+          Text(
+            text,
+            style: TextStyle(
+              color: color,
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "وقت التاسك",
-                                  style: TextStyle(
-                                    color: AppColors.textPrimary.withOpacity(.6),
-                                    fontSize: 12,
-                                  ),
-                                ),
-
-                                const SizedBox(height: 3),
-
-                                Text(
-                                  TimeOfDay.fromDateTime(time).format(context),
-                                  style: TextStyle(
-                                    color: AppColors.textPrimary,
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
+  Widget _sheen() {
+    return Positioned.fill(
+      child: IgnorePointer(
+        child: AnimatedBuilder(
+          animation: _enter,
+          builder: (context, _) {
+            final t = const Interval(0.35, 1.0, curve: Curves.easeInOut)
+                .transform(_enter.value);
+            if (t <= 0 || t >= 1) return const SizedBox.shrink();
+            return LayoutBuilder(
+              builder: (context, c) {
+                final w = c.maxWidth;
+                return Stack(
+                  children: [
+                    Positioned(
+                      left: -w * 0.4 + t * w * 1.6,
+                      top: 0,
+                      bottom: 0,
+                      width: w * 0.35,
+                      child: Transform(
+                        transform: Matrix4.skewX(-0.35),
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                Colors.white.withValues(alpha: 0),
+                                Colors.white.withValues(alpha: 0.45),
+                                Colors.white.withValues(alpha: 0),
                               ],
                             ),
-                          ],
-                        ),
-                      ),
-
-                      const SizedBox(height: 16),
-
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 14,
-                          horizontal: 16,
-                        ),
-                        decoration: BoxDecoration(
-                          color: value
-                              ? Colors.green.withOpacity(.1)
-                              : Colors.orange.withOpacity(.1),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(
-                              value
-                                  ? Icons.check_circle_rounded
-                                  : Icons.pending_rounded,
-                              color: value
-                                  ? Colors.green
-                                  : Colors.orange,
-                              size: 26,
-                            ),
-
-                            const SizedBox(width: 12),
-
-                            Text(
-                              value ? "خلصت التاسك " : "لسه مخلصتش",
-                              style: TextStyle(
-                                color: AppColors.textPrimary,
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  actions: [
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text("تمام", style: TextStyle(
-                          color: AppColors.onAccent
-                        ),),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.accent
+                          ),
                         ),
                       ),
                     ),
@@ -228,111 +476,247 @@ class TodoTile extends StatelessWidget {
               },
             );
           },
-          child: Stack(
+        ),
+      ),
+    );
+  }
+
+  // ---------------------------------------------------------------
+  // Build
+  // ---------------------------------------------------------------
+
+  @override
+  Widget build(BuildContext context) {
+    final overdue = _overdue;
+
+    final Color stateColor = value
+        ? AppColors.success
+        : overdue
+        ? AppColors.danger
+        : AppColors.accent;
+    final Color metaColor = value ? AppColors.success : stateColor;
+
+    final stripe = value
+        ? const [Color(0xFF3DDC97), AppColors.success]
+        : overdue
+        ? [AppColors.danger, AppColors.warm]
+        : [AppColors.accentLight, AppColors.accent];
+
+    final bgTop = value
+        ? Color.alphaBlend(
+      AppColors.success.withValues(alpha: 0.12),
+      AppColors.surface,
+    )
+        : AppColors.surface;
+    final bgBottom = Color.alphaBlend(
+      stateColor.withValues(alpha: value ? 0.04 : 0.08),
+      AppColors.surface,
+    );
+
+    final curved = CurvedAnimation(
+      parent: _enter,
+      curve: const Interval(0, 0.5, curve: Curves.easeOutCubic),
+    );
+
+    return AnimatedBuilder(
+      animation: curved,
+      builder: (context, child) {
+        final v = curved.value;
+        return Opacity(
+          opacity: v,
+          child: Transform.translate(
+            offset: Offset(26 * (1 - v), 0),
+            child: Transform.scale(scale: 0.94 + 0.06 * v, child: child),
+          ),
+        );
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 7),
+        child: Slidable(
+          endActionPane: ActionPane(
+            motion: const BehindMotion(),
+            extentRatio: 0.42,
             children: [
-              Transform.translate(
-                offset: Offset(-3, -5),
-                child: Transform.rotate(
-                  angle: -0.030,
-                  child: _card(color: AppColors.surfaceAlt),
+              SlidableAction(
+                onPressed: widget.updateTask,
+                icon: Icons.edit_rounded,
+                backgroundColor: AppColors.accent,
+                foregroundColor: AppColors.onAccent,
+                borderRadius: BorderRadius.zero,
+              ),
+              SlidableAction(
+                onPressed: widget.deleteTask,
+                icon: Icons.delete_outline_rounded,
+                backgroundColor: AppColors.danger,
+                foregroundColor: Colors.white,
+                borderRadius: const BorderRadius.horizontal(
+                  left: Radius.circular(24),
                 ),
               ),
-              Transform.translate(
-                offset: Offset(5, 0),
-                child: Transform.rotate(
-                  angle: 0.030,
-                  child: _card(color: AppColors.surfaceAlt),
-                ),
-              ),
-              Container(
-                padding: EdgeInsets.all(15),
-                decoration: BoxDecoration(
-                  color: value
-                      ? AppColors.surfaceAlt
-                      : time.isAfter(now.add(const Duration(days: 1)))
-                      ? AppColors.overlay
-                      : AppColors.surface,
-                  border: Border.all(
-                    color: time.isBefore(DateTime(now.year, now.month, now.day))
-                        ? AppColors.onDanger
-                        : AppColors.border,
-                    width: 1,
+            ],
+          ),
+          child: Pressable(
+            pressedScale: 0.97,
+            onTap: () => _showDetails(context, overdue: overdue),
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: stateColor.withValues(alpha: value ? 0.0 : 0.16),
+                    blurRadius: 22,
+                    offset: const Offset(0, 10),
                   ),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(24),
+                child: Stack(
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        //Task name and the check box
-                        Row(
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 350),
+                      curve: Curves.easeOutCubic,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topRight,
+                          end: Alignment.bottomLeft,
+                          colors: [bgTop, bgBottom],
+                        ),
+                        border: Border.all(
+                          color: overdue
+                              ? AppColors.danger.withValues(alpha: 0.4)
+                              : value
+                              ? AppColors.success.withValues(alpha: 0.3)
+                              : AppColors.border,
+                        ),
+                        borderRadius: BorderRadius.circular(24),
+                      ),
+                      child: IntrinsicHeight(
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            Transform.scale(
-                              scale: 1.3,
-                              child: Checkbox(
-                                value: value,
-                                onChanged: onChanged,
-                                activeColor: AppColors.overlay,
-                                shape: CircleBorder(
-                                  side: BorderSide(
-                                    width: 1,
-                                    color: AppColors.border,
-                                  ),
+                            AnimatedContainer(
+                              duration: const Duration(milliseconds: 350),
+                              width: 6,
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                  colors: stripe,
                                 ),
                               ),
                             ),
-                            Text(
-                               taskName.length <= 15 ? taskName : "${taskName.substring(0, 15)} ...",
-                              style: TextStyle(
-                                color: value
-                                    ? AppColors.textPrimary
-                                    : AppColors.textPrimary,
-                                fontWeight: FontWeight.w800,
-                                decoration: value
-                                    ? TextDecoration.lineThrough
-                                    : TextDecoration.none,
-                                decorationThickness: 3,
-                                decorationColor: AppColors.accent,
+                            Expanded(
+                              child: Padding(
+                                padding:
+                                const EdgeInsets.fromLTRB(14, 14, 6, 14),
+                                child: Row(
+                                  children: [
+                                    _checkCircle(),
+                                    const SizedBox(width: 6),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                        children: [
+                                          AnimatedDefaultTextStyle(
+                                            duration: const Duration(
+                                              milliseconds: 250,
+                                            ),
+                                            style: TextStyle(
+                                              color: value
+                                                  ? AppColors.textMuted
+                                                  : AppColors.textPrimary,
+                                              fontSize: 17,
+                                              fontWeight: FontWeight.w900,
+                                              height: 1.25,
+                                              decoration: value
+                                                  ? TextDecoration.lineThrough
+                                                  : TextDecoration.none,
+                                              decorationColor:
+                                              AppColors.success,
+                                              decorationThickness: 2.5,
+                                            ),
+                                            child: Text(
+                                              taskName,
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 7),
+                                          _metaRow(metaColor),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    _timeBadge(
+                                      context,
+                                      value
+                                          ? AppColors.textMuted
+                                          : stateColor,
+                                    ),
+                                    const SizedBox(width: 8),
+                                  ],
+                                ),
                               ),
                             ),
                           ],
                         ),
-                        Text(
-                          DateUtils.isSameDay(time, DateTime.now())
-                              ? TimeOfDay.fromDateTime(time).format(context)
-                              : "${time.month}/${time.day} -- ${TimeOfDay.fromDateTime(time).format(context)}",
-                          style: TextStyle(
-                            color: value
-                                ? AppColors.textPrimary
-                                : AppColors.textPrimary,
-                            fontSize: 15,
-                            decoration: value
-                                ? TextDecoration.lineThrough
-                                : TextDecoration.none,
-                            decorationThickness: 3,
-                            decorationColor: AppColors.accent,
-                          ),
-                        ),
-                      ],
-                    ),
-                    if (time.isBefore(DateTime(now.year, now.month, now.day)))
-                      Text(
-                        "تاسك متأخره",
-                        style: TextStyle(
-                          color: AppColors.danger,
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                        ),
                       ),
+                    ),
+                    _sheen(),
                   ],
                 ),
               ),
-            ],
+            ),
           ),
         ),
       ),
     );
   }
+}
+
+/// Little confetti ring that bursts out of the check circle.
+class _BurstPainter extends CustomPainter {
+  final double t;
+  _BurstPainter(this.t);
+
+  static const _colors = [
+    Color(0xFF3DDC97),
+    AppColors.accent,
+    AppColors.warm,
+    AppColors.accentLight,
+  ];
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = size.center(Offset.zero);
+    final eased = Curves.easeOutCubic.transform(t);
+
+    // expanding ring
+    canvas.drawCircle(
+      center,
+      17 + 14 * eased,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 3 * (1 - t)
+        ..color = AppColors.success.withValues(alpha: 0.6 * (1 - t)),
+    );
+
+    // dots
+    const count = 10;
+    for (var i = 0; i < count; i++) {
+      final angle = (2 * math.pi / count) * i;
+      final dist = 14 + 22 * eased;
+      final radius = 3.2 * (1 - t) + 0.4;
+      canvas.drawCircle(
+        center + Offset(math.cos(angle), math.sin(angle)) * dist,
+        radius,
+        Paint()..color = _colors[i % _colors.length].withValues(alpha: 1 - t),
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _BurstPainter old) => old.t != t;
 }

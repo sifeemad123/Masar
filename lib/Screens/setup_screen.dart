@@ -277,7 +277,7 @@ class _SetupScreenState extends State<SetupScreen>
                 ),
                 SizedBox(width: 10),
                 Icon(
-                  Icons.arrow_back_rounded,
+                  Icons.arrow_forward_rounded,
                   color: AppColors.onAccent,
                   size: 24,
                 ),

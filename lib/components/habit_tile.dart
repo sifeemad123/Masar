@@ -1,16 +1,28 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:masar/components/motion.dart';
 import 'package:masar/theme/AppColors.dart';
 
-class HabitTile extends StatelessWidget {
+class HabitTile extends StatefulWidget {
   final String habitName;
   final String habitDescription;
   final bool habitComplete;
   final int streakCount;
-  Function(bool?)? onChanged;
-  Function(BuildContext)? deleteTask;
-  Function(BuildContext)? updateTask;
-  HabitTile({
+
+  /// e.g. "7:30 ص" — shown as a small chip when the habit has an alarm.
+  final String? alarmText;
+
+  final Function(bool?)? onChanged;
+  final Function(BuildContext)? deleteTask;
+  final Function(BuildContext)? updateTask;
+
+  /// Position in the list, used to stagger the entrance animation.
+  final int index;
+
+  const HabitTile({
     super.key,
     required this.habitName,
     required this.habitDescription,
@@ -19,167 +31,425 @@ class HabitTile extends StatelessWidget {
     required this.streakCount,
     required this.deleteTask,
     required this.updateTask,
+    this.alarmText,
+    this.index = 0,
   });
 
-  Widget _card({Widget? child, Color? color}) {
-    Color color2 = color ?? AppColors.surface;
-    return Container(
-      width: double.infinity,
-      height: 90,
-      decoration: BoxDecoration(
-        color: color2,
-        border: Border.all(color: AppColors.border),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Center(child: child),
-    );
-  }
+  @override
+  State<HabitTile> createState() => _HabitTileState();
+}
 
+class _HabitTileState extends State<HabitTile> with TickerProviderStateMixin {
+  late final AnimationController _enter;
+  late final AnimationController _burst;
+  late final AnimationController _flame;
+
+  bool get done => widget.habitComplete;
 
   @override
-  Widget build(BuildContext context) {
-    final now = DateTime.now();
-    return Padding(
-      padding: const EdgeInsets.only(left: 25, right: 25, top: 25),
-      child: Slidable(
-        endActionPane: ActionPane(
-          motion: StretchMotion(),
-          children: [
-            SlidableAction(
-              onPressed: deleteTask,
-              icon: Icons.delete_outline,
-              backgroundColor: AppColors.danger,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            SlidableAction(
-              onPressed: updateTask,
-              icon: Icons.edit_rounded,
-              backgroundColor: AppColors.accent,
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ],
-        ),
-        child: InkWell(
-          onTap: () {
-            showDialog(
-              context: context,
-              builder: (context) {
-                return AlertDialog(
-                  backgroundColor: AppColors.surface,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(24),
-                  ),
-                  titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
-                  contentPadding: const EdgeInsets.fromLTRB(24, 12, 24, 8),
-                  actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+  void initState() {
+    super.initState();
+    _enter = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1100),
+    );
+    _burst = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 650),
+    );
+    _flame = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1100),
+    );
 
-                  title: Row(
+    Future.delayed(
+      Duration(milliseconds: math.min(widget.index, 10) * 80),
+          () {
+        if (mounted) _enter.forward();
+      },
+    );
+    _syncFlame();
+  }
+
+  @override
+  void didUpdateWidget(covariant HabitTile oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!oldWidget.habitComplete && widget.habitComplete) {
+      HapticFeedback.mediumImpact();
+      _burst.forward(from: 0);
+    }
+    _syncFlame();
+  }
+
+  void _syncFlame() {
+    if (done && widget.streakCount > 0) {
+      if (!_flame.isAnimating) _flame.repeat(reverse: true);
+    } else {
+      _flame.stop();
+    }
+  }
+
+  @override
+  void dispose() {
+    _enter.dispose();
+    _burst.dispose();
+    _flame.dispose();
+    super.dispose();
+  }
+
+  // ---------------------------------------------------------------
+  // Details sheet
+  // ---------------------------------------------------------------
+
+  void _showDetails(BuildContext context) {
+    final streak = widget.streakCount;
+
+    Widget section(String title, String value) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            value.isEmpty ? "مفيش وصف" : value,
+            style: const TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: 17,
+              fontWeight: FontWeight.w700,
+              height: 1.4,
+            ),
+          ),
+        ],
+      );
+    }
+
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      builder: (sheetContext) {
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(24, 4, 24, 28),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                "تفاصيل العادة",
+                style: TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                widget.habitName,
+                style: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 24,
+                  fontWeight: FontWeight.w900,
+                  height: 1.3,
+                ),
+              ),
+              const SizedBox(height: 18),
+              section("وصف العادة", widget.habitDescription),
+              const SizedBox(height: 18),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 20),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topRight,
+                    end: Alignment.bottomLeft,
+                    colors: [
+                      AppColors.flameActive.withValues(alpha: 0.18),
+                      AppColors.flameActive.withValues(alpha: 0.05),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(22),
+                ),
+                child: Column(
+                  children: [
+                    Icon(
+                      Icons.local_fire_department_rounded,
+                      color: streak > 0
+                          ? AppColors.flameActive
+                          : AppColors.flameInactive,
+                      size: 44,
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      streak == 0 ? "لسه البداية" : "$streak يوم متواصل",
+                      style: const TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 21,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      streak == 0
+                          ? "ابدأ النهاردة وخليها عادة"
+                          : "كمّل، إنت ماشي كويس",
+                      style: const TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (widget.alarmText != null) ...[
+                const SizedBox(height: 14),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.overlay,
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                  child: Row(
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: AppColors.textPrimary.withOpacity(.1),
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        child: Icon(
-                          Icons.info_outline_rounded,
-                          color: AppColors.textPrimary,
-                          size: 28,
+                      const Icon(
+                        Icons.alarm_rounded,
+                        color: AppColors.accent,
+                        size: 24,
+                      ),
+                      const SizedBox(width: 12),
+                      const Text(
+                        "التنبيه",
+                        style: TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 14,
                         ),
                       ),
-
-                      const SizedBox(width: 12),
-
+                      const Spacer(),
                       Text(
-                        "تفاصيل العادة",
-                        style: TextStyle(
+                        widget.alarmText!,
+                        style: const TextStyle(
                           color: AppColors.textPrimary,
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
                         ),
                       ),
                     ],
                   ),
-
-                  content: SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-
-                        _InfoSection(
-                          title: "اسم العادة",
-                          value: habitName,
-                        ),
-
-                        const SizedBox(height: 18),
-
-                        _InfoSection(
-                          title: "وصف العادة",
-                          value: habitDescription,
-                        ),
-
-                        const SizedBox(height: 20),
-
-                        // Streak
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 18,
-                            horizontal: 16,
-                          ),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(18),
-                            color: AppColors.textPrimary.withOpacity(.08),
-                          ),
-                          child: Column(
-                            children: [
-                              Icon(
-                                Icons.local_fire_department_rounded,
-                                color: AppColors.flameActive,
-                                size: 34,
-                              ),
-
-                              const SizedBox(height: 6),
-
-                              Text(
-                                streakCount == 0
-                                    ? "لسه البداية"
-                                    : "$streakCount يوم مستمر",
-                                style: TextStyle(
-                                  color: AppColors.textPrimary,
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-
-                              const SizedBox(height: 4),
-
-                              Text(
-                                streakCount == 0
-                                    ? "ابدأ النهارده وخليها عادة"
-                                    : "استمر، أنت ماشي كويس",
-                                style: TextStyle(
-                                  color: AppColors.textPrimary.withOpacity(.65),
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
+                ),
+              ],
+              const SizedBox(height: 22),
+              Pressable(
+                onTap: () => Navigator.pop(sheetContext),
+                child: Container(
+                  height: 54,
+                  width: double.infinity,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      begin: Alignment.centerRight,
+                      end: Alignment.centerLeft,
+                      colors: [AppColors.accent, AppColors.accentDark],
+                    ),
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                  child: const Text(
+                    "تمام",
+                    style: TextStyle(
+                      color: AppColors.onAccent,
+                      fontSize: 17,
+                      fontWeight: FontWeight.w800,
                     ),
                   ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 
-                  actions: [
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text("تمام", style: TextStyle(
-                            color: AppColors.onAccent
-                        ),),
-                        style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.accent
+  // ---------------------------------------------------------------
+  // Pieces
+  // ---------------------------------------------------------------
+
+  Widget _checkCircle() {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () {
+        if (done) HapticFeedback.selectionClick();
+        widget.onChanged?.call(!done);
+      },
+      child: SizedBox(
+        width: 52,
+        height: 52,
+        child: AnimatedBuilder(
+          animation: _burst,
+          builder: (context, _) {
+            final t = _burst.value;
+            final bounce = 1 + 0.28 * math.sin(math.pi * t);
+            return Stack(
+              alignment: Alignment.center,
+              clipBehavior: Clip.none,
+              children: [
+                if (t > 0 && t < 1)
+                  Positioned.fill(
+                    child: CustomPaint(painter: _BurstPainter(t)),
+                  ),
+                Transform.scale(
+                  scale: bounce,
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeOutCubic,
+                    width: 34,
+                    height: 34,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: done
+                          ? const LinearGradient(
+                        begin: Alignment.topRight,
+                        end: Alignment.bottomLeft,
+                        colors: [Color(0xFF3DDC97), AppColors.success],
+                      )
+                          : null,
+                      border: Border.all(
+                        color: done ? Colors.transparent : AppColors.textMuted,
+                        width: 2,
+                      ),
+                      boxShadow: done
+                          ? [
+                        BoxShadow(
+                          color:
+                          AppColors.success.withValues(alpha: 0.4),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ]
+                          : const [],
+                    ),
+                    child: AnimatedScale(
+                      scale: done ? 1 : 0,
+                      duration: const Duration(milliseconds: 320),
+                      curve: Curves.easeOutBack,
+                      child: const Icon(
+                        Icons.check_rounded,
+                        size: 21,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _streakBadge() {
+    final active = done && widget.streakCount > 0;
+    final color = active ? AppColors.flameActive : AppColors.textMuted;
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 350),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        gradient: active
+            ? LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            AppColors.flameActive.withValues(alpha: 0.2),
+            AppColors.flameActive.withValues(alpha: 0.06),
+          ],
+        )
+            : null,
+        color: active ? null : AppColors.overlay,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          AnimatedBuilder(
+            animation: _flame,
+            builder: (context, child) {
+              final t = Curves.easeInOut.transform(_flame.value);
+              return Transform.scale(
+                scale: 1 + 0.18 * t,
+                child: Transform.rotate(angle: (t - 0.5) * 0.18, child: child),
+              );
+            },
+            child: Icon(
+              Icons.local_fire_department_rounded,
+              color: active ? AppColors.flameActive : AppColors.flameInactive,
+              size: 24,
+            ),
+          ),
+          const SizedBox(height: 2),
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 350),
+            transitionBuilder: (child, anim) => ScaleTransition(
+              scale: anim,
+              child: FadeTransition(opacity: anim, child: child),
+            ),
+            child: Text(
+              "${widget.streakCount}",
+              key: ValueKey(widget.streakCount),
+              style: TextStyle(
+                color: active ? AppColors.textPrimary : AppColors.textMuted,
+                fontSize: 17,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _sheen() {
+    return Positioned.fill(
+      child: IgnorePointer(
+        child: AnimatedBuilder(
+          animation: _enter,
+          builder: (context, _) {
+            final t = const Interval(0.35, 1.0, curve: Curves.easeInOut)
+                .transform(_enter.value);
+            if (t <= 0 || t >= 1) return const SizedBox.shrink();
+            return LayoutBuilder(
+              builder: (context, c) {
+                final w = c.maxWidth;
+                return Stack(
+                  children: [
+                    Positioned(
+                      left: -w * 0.4 + t * w * 1.6,
+                      top: 0,
+                      bottom: 0,
+                      width: w * 0.35,
+                      child: Transform(
+                        transform: Matrix4.skewX(-0.35),
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                Colors.white.withValues(alpha: 0),
+                                Colors.white.withValues(alpha: 0.45),
+                                Colors.white.withValues(alpha: 0),
+                              ],
+                            ),
+                          ),
                         ),
                       ),
                     ),
@@ -188,113 +458,219 @@ class HabitTile extends StatelessWidget {
               },
             );
           },
-          child: Stack(
+        ),
+      ),
+    );
+  }
+
+  // ---------------------------------------------------------------
+  // Build
+  // ---------------------------------------------------------------
+
+  @override
+  Widget build(BuildContext context) {
+    final stateColor = done ? AppColors.success : AppColors.accent;
+    final stripe = done
+        ? const [Color(0xFF3DDC97), AppColors.success]
+        : [AppColors.accentLight, AppColors.accent];
+
+    final bgTop = done
+        ? Color.alphaBlend(
+      AppColors.success.withValues(alpha: 0.12),
+      AppColors.surface,
+    )
+        : AppColors.surface;
+    final bgBottom = Color.alphaBlend(
+      stateColor.withValues(alpha: done ? 0.04 : 0.08),
+      AppColors.surface,
+    );
+
+    final curved = CurvedAnimation(
+      parent: _enter,
+      curve: const Interval(0, 0.5, curve: Curves.easeOutCubic),
+    );
+
+    return AnimatedBuilder(
+      animation: curved,
+      builder: (context, child) {
+        final v = curved.value;
+        return Opacity(
+          opacity: v,
+          child: Transform.translate(
+            offset: Offset(26 * (1 - v), 0),
+            child: Transform.scale(scale: 0.94 + 0.06 * v, child: child),
+          ),
+        );
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 7),
+        child: Slidable(
+          endActionPane: ActionPane(
+            motion: const BehindMotion(),
+            extentRatio: 0.42,
             children: [
-              Transform.translate(
-                offset: Offset(-3, -5),
-                child: Transform.rotate(
-                  angle: -0.030,
-                  child: _card(color: AppColors.surfaceAlt),
-                ),
+              SlidableAction(
+                onPressed: widget.updateTask,
+                icon: Icons.edit_rounded,
+                backgroundColor: AppColors.accent,
+                foregroundColor: AppColors.onAccent,
+                borderRadius: BorderRadius.zero,
               ),
-              Transform.translate(
-                offset: Offset(5, 0),
-                child: Transform.rotate(
-                  angle: 0.030,
-                  child: _card(color: AppColors.surfaceAlt),
-                ),
-              ),
-              Container(
-                padding: EdgeInsets.all(15),
-                decoration: BoxDecoration(
-                  color: habitComplete
-                      ? AppColors.surfaceAlt
-                      : AppColors.surface,
-                  border: Border.all(
-                    color: AppColors.border,
-                    width: 1,
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            Transform.scale(
-                              scale: 1.3,
-                              child: Checkbox(
-                                value: habitComplete,
-                                onChanged: onChanged,
-                                activeColor: AppColors.overlay,
-                                shape: CircleBorder(
-                                  side: BorderSide(
-                                    width: 1,
-                                    color: AppColors.border,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            Column(
-                              children: [
-                                Text(
-                                  habitName.length <= 15 ? habitName : "${habitName.substring(0, 15)}...",
-                                  style: TextStyle(
-                                    color: habitComplete
-                                        ? AppColors.textPrimary
-                                        : AppColors.textPrimary,
-                                    fontWeight: FontWeight.w800,
-                                    decoration: habitComplete
-                                        ? TextDecoration.lineThrough
-                                        : TextDecoration.none,
-                                    decorationThickness: 3,
-                                    decorationColor: AppColors.accent,
-                                  ),
-                                ),
-                                Text(
-                                  habitDescription.length <= 25 ? habitDescription : "${habitDescription.substring(0, 25)}...",
-                                  style: TextStyle(
-                                    color: habitComplete
-                                        ? AppColors.textPrimary
-                                        : AppColors.textPrimary,
-                                    fontSize: 15,
-                                    decoration: habitComplete
-                                        ? TextDecoration.lineThrough
-                                        : TextDecoration.none,
-                                    decorationThickness: 3,
-                                    decorationColor: AppColors.accent,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        Row(
-                          spacing: 7,
-                          children: [
-                            Text(
-                              "$streakCount",
-                              style: TextStyle(
-                                color: habitComplete
-                                    ? AppColors.textPrimary
-                                    : AppColors.textPrimary,
-                                fontSize: 15,
-                                decorationThickness: 3,
-                                decorationColor: AppColors.accent,
-                              ),
-                            ),
-                            Icon(Icons.water_drop, color: habitComplete ? AppColors.flameActive : AppColors.flameInactive ,size: 17,)
-                          ],
-                        ),
-                      ],
-                    ),
-                  ],
+              SlidableAction(
+                onPressed: widget.deleteTask,
+                icon: Icons.delete_outline_rounded,
+                backgroundColor: AppColors.danger,
+                foregroundColor: Colors.white,
+                borderRadius: const BorderRadius.horizontal(
+                  left: Radius.circular(24),
                 ),
               ),
             ],
+          ),
+          child: Pressable(
+            pressedScale: 0.97,
+            onTap: () => _showDetails(context),
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: stateColor.withValues(alpha: done ? 0.0 : 0.16),
+                    blurRadius: 22,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(24),
+                child: Stack(
+                  children: [
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 350),
+                      curve: Curves.easeOutCubic,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topRight,
+                          end: Alignment.bottomLeft,
+                          colors: [bgTop, bgBottom],
+                        ),
+                        border: Border.all(
+                          color: done
+                              ? AppColors.success.withValues(alpha: 0.3)
+                              : AppColors.border,
+                        ),
+                        borderRadius: BorderRadius.circular(24),
+                      ),
+                      child: IntrinsicHeight(
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            AnimatedContainer(
+                              duration: const Duration(milliseconds: 350),
+                              width: 6,
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                  colors: stripe,
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: Padding(
+                                padding:
+                                const EdgeInsets.fromLTRB(14, 14, 10, 14),
+                                child: Row(
+                                  children: [
+                                    _checkCircle(),
+                                    const SizedBox(width: 6),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                        children: [
+                                          AnimatedDefaultTextStyle(
+                                            duration: const Duration(
+                                              milliseconds: 250,
+                                            ),
+                                            style: TextStyle(
+                                              color: done
+                                                  ? AppColors.textMuted
+                                                  : AppColors.textPrimary,
+                                              fontSize: 17,
+                                              fontWeight: FontWeight.w900,
+                                              height: 1.25,
+                                              decoration: done
+                                                  ? TextDecoration.lineThrough
+                                                  : TextDecoration.none,
+                                              decorationColor:
+                                              AppColors.success,
+                                              decorationThickness: 2.5,
+                                            ),
+                                            child: Text(
+                                              widget.habitName,
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                          if (widget.habitDescription
+                                              .isNotEmpty) ...[
+                                            const SizedBox(height: 3),
+                                            Text(
+                                              widget.habitDescription,
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: const TextStyle(
+                                                color:
+                                                AppColors.textSecondary,
+                                                fontSize: 13.5,
+                                              ),
+                                            ),
+                                          ],
+                                          if (widget.alarmText != null) ...[
+                                            const SizedBox(height: 7),
+                                            Row(
+                                              children: [
+                                                Icon(
+                                                  Icons.alarm_rounded,
+                                                  size: 15,
+                                                  color: done
+                                                      ? AppColors.textMuted
+                                                      : AppColors.accent,
+                                                ),
+                                                const SizedBox(width: 5),
+                                                Text(
+                                                  widget.alarmText!,
+                                                  style: TextStyle(
+                                                    color: done
+                                                        ? AppColors.textMuted
+                                                        : AppColors.accent,
+                                                    fontSize: 12.5,
+                                                    fontWeight:
+                                                    FontWeight.w700,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    _streakBadge(),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    _sheen(),
+                  ],
+                ),
+              ),
+            ),
           ),
         ),
       ),
@@ -302,41 +678,45 @@ class HabitTile extends StatelessWidget {
   }
 }
 
+/// Little confetti ring that bursts out of the check circle.
+class _BurstPainter extends CustomPainter {
+  final double t;
+  _BurstPainter(this.t);
 
-class _InfoSection extends StatelessWidget {
-  final String title;
-  final String value;
-
-  const _InfoSection({
-    required this.title,
-    required this.value,
-  });
+  static const _colors = [
+    Color(0xFF3DDC97),
+    AppColors.accent,
+    AppColors.warm,
+    AppColors.accentLight,
+  ];
 
   @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: TextStyle(
-            color: AppColors.textPrimary.withOpacity(.6),
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
+  void paint(Canvas canvas, Size size) {
+    final center = size.center(Offset.zero);
+    final eased = Curves.easeOutCubic.transform(t);
 
-        const SizedBox(height: 6),
-
-        Text(
-          value.isEmpty ? "لا يوجد" : value,
-          style: TextStyle(
-            color: AppColors.textPrimary,
-            fontSize: 17,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ],
+    canvas.drawCircle(
+      center,
+      17 + 14 * eased,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 3 * (1 - t)
+        ..color = AppColors.success.withValues(alpha: 0.6 * (1 - t)),
     );
+
+    const count = 10;
+    for (var i = 0; i < count; i++) {
+      final angle = (2 * math.pi / count) * i;
+      final dist = 14 + 22 * eased;
+      final radius = 3.2 * (1 - t) + 0.4;
+      canvas.drawCircle(
+        center + Offset(math.cos(angle), math.sin(angle)) * dist,
+        radius,
+        Paint()..color = _colors[i % _colors.length].withValues(alpha: 1 - t),
+      );
+    }
   }
+
+  @override
+  bool shouldRepaint(covariant _BurstPainter old) => old.t != t;
 }

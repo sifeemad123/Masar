@@ -1,14 +1,26 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
+import 'package:masar/components/empty_state.dart';
 import 'package:masar/components/habit_tile.dart';
+import 'package:masar/components/motion.dart';
 import 'package:masar/providers/habits_provider.dart';
 import 'package:masar/theme/AppColors.dart';
 import 'package:provider/provider.dart';
 
-import '../components/button.dart';
-import '../components/dialogs.dart';
+import '../components/habits_sheets.dart';
 
 class HabitsScreen extends StatefulWidget {
   const HabitsScreen({super.key});
+
+  /// Kept for backwards compatibility with any caller of the old API.
+  static void confirmation({
+    required BuildContext context,
+    required String message,
+    required int index,
+  }) {
+    HabitSheets.confirmDelete(context, index);
+  }
 
   @override
   State<HabitsScreen> createState() => _HabitsScreenState();
@@ -17,469 +29,264 @@ class HabitsScreen extends StatefulWidget {
 class _HabitsScreenState extends State<HabitsScreen> {
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     Provider.of<HabitsProvider>(context, listen: false).resetCompletedHabits();
   }
 
-  static void confirmation({
-    required BuildContext context,
-    required String message,
-    required int index
+  // ---------------------------------------------------------------
+  // Summary card
+  // ---------------------------------------------------------------
+
+  Widget _summaryCard({
+    required int done,
+    required int total,
+    required int bestStreak,
   }) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return Dialog(
-          backgroundColor: Colors.transparent,
-          child: Container(
-            width: 350,
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(15),
+    final progress = total == 0 ? 0.0 : done / total;
+    final allDone = total > 0 && done == total;
+
+    return FadeSlideIn(
+      index: 1,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              begin: Alignment.topRight,
+              end: Alignment.bottomLeft,
+              colors: [AppColors.accent, AppColors.accentDark],
             ),
-            clipBehavior: Clip.antiAlias,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: double.infinity,
-                  color: AppColors.overlay,
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 20,
-                  ),
-                  child: Icon(
-                    Icons.check,
-                    size: 50,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-
-                Padding(
-                  padding: const EdgeInsets.all(10),
-                  child: Text(
-                    " تأكيد ",
-                    style: TextStyle(
-                      color: AppColors.textPrimary,
-                      fontSize: 25,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-
-                Padding(
-                  padding: const EdgeInsets.all(10),
-                  child: Text(
-                    message,
-                    style: TextStyle(
-                      color: AppColors.textSecondary,
-                      fontSize: 16,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-
-                const SizedBox(height: 5),
-
-                Row(
-                  spacing: 20,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                        Provider.of<HabitsProvider>(context , listen: false).deleteHabit(index: index);
-                        Dialogs.success(context: context, message: "تم حذف العاده بنجاح");
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.overlay,
-                      ),
-                      child: Text(
-                        "تأكيد",
-                        style: TextStyle(
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                    ),
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.overlay,
-                      ),
-                      child: Text(
-                        "إغلاق",
-                        style: TextStyle(
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 10),
-              ],
-            ),
+            borderRadius: BorderRadius.circular(28),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.accent.withValues(alpha: 0.3),
+                blurRadius: 26,
+                offset: const Offset(0, 12),
+              ),
+            ],
           ),
-        );
-      },
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          allDone ? "عاش! كملت عاداتك" : "التزامك النهاردة",
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 19,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          "خلصت $done من $total",
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.85),
+                            fontSize: 14.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.16),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.local_fire_department_rounded,
+                          color: Color(0xFFFFC857),
+                          size: 22,
+                        ),
+                        const SizedBox(width: 5),
+                        AnimatedCount(
+                          value: bestStreak,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 17,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          "أطول سلسلة",
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.85),
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 18),
+              TweenAnimationBuilder<double>(
+                tween: Tween(begin: 0, end: progress),
+                duration: const Duration(milliseconds: 900),
+                curve: Curves.easeOutCubic,
+                builder: (context, v, _) {
+                  return Stack(
+                    children: [
+                      Container(
+                        height: 12,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.22),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      FractionallySizedBox(
+                        widthFactor: math.max(v, 0.0001),
+                        child: Container(
+                          height: 12,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(10),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.white.withValues(alpha: 0.5),
+                                blurRadius: 10,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
-  void _editHabit(int index) {
-    final habait = Provider.of<HabitsProvider>(
-      context,
-      listen: false,
-    ).habits[index];
+  // ---------------------------------------------------------------
+  // Build
+  // ---------------------------------------------------------------
 
-    final habitNameController = TextEditingController(text: habait.habitName);
-    final habitDescriptionController = TextEditingController(text: habait.habitDescription);
+  @override
+  Widget build(BuildContext context) {
+    final provider = context.watch<HabitsProvider>();
+    final habits = provider.habits;
 
-    final formKey = GlobalKey<FormState>();
-    TimeOfDay? selectedAlarmTime =
-    habait.alarmHour != null && habait.alarmMinute != null
-        ? TimeOfDay(
-      hour: habait.alarmHour!,
-      minute: habait.alarmMinute!,
-    )
-        : null;
+    final done = habits.where((h) => h.habitCompleted).length;
+    final best = habits.isEmpty
+        ? 0
+        : habits.map((h) => h.streakCount).reduce(math.max);
 
-
-    showModalBottomSheet(
-      isScrollControlled: true,
-      showDragHandle: true,
-      backgroundColor: AppColors.surface,
-      context: context,
-      builder: (BuildContext context) {
-        return StatefulBuilder(
-          builder: (context, setModalState) {
-            return Padding(
-              padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).viewInsets.bottom,
-              ),
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(30, 10, 30, 30),
-                  child: Form(
-                    key: formKey,
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              AppColors.pearlLight,
+              AppColors.background,
+              AppColors.pearlDark,
+            ],
+          ),
+        ),
+        child: SafeArea(
+          bottom: false,
+          child: Directionality(
+            textDirection: TextDirection.rtl,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 18, 24, 0),
+                  child: FadeSlideIn(
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Header
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              "تعديل العاده",
-                              style: TextStyle(
-                                color: AppColors.textPrimary,
-                                fontSize: 25,
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                            Container(
-                              decoration: BoxDecoration(
-                                color: AppColors.accent,
-                                borderRadius: BorderRadius.circular(50),
-                              ),
-                              child: IconButton(
-                                onPressed: () {
-                                  Navigator.pop(context);
-                                },
-                                icon: Icon(
-                                  Icons.close,
-                                  color: AppColors.onAccent,
-                                  size: 25,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-
-                        const SizedBox(height: 30),
-
-                        // Task Name
-                        Row(
-                          children: [
-                            Text(
-                              "اسم العاده",
-                              style: TextStyle(
-                                color: AppColors.textSecondary,
-                                fontSize: 20,
-                              ),
-                            ),
-                          ],
-                        ),
-
-                        const SizedBox(height: 15),
-
-                        TextFormField(
-                          controller: habitNameController,
-                          style: TextStyle(color: AppColors.textPrimary),
-                          validator: (value) {
-                            if (value == null || value.trim().isEmpty) {
-                              return "يرجى إدخال اسم العاده";
-                            }
-
-                            return null;
-                          },
-                          decoration: InputDecoration(
-                            fillColor: AppColors.overlay,
-                            filled: true,
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(color: AppColors.border),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(
-                                color: AppColors.border,
-                                width: 2,
-                              ),
-                            ),
-                            errorBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(color: AppColors.danger),
-                            ),
-                            focusedErrorBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(
-                                color: AppColors.danger,
-                                width: 2,
-                              ),
-                            ),
+                        const Text(
+                          "عاداتي",
+                          style: TextStyle(
+                            color: AppColors.textPrimary,
+                            fontSize: 32,
+                            fontWeight: FontWeight.w900,
                           ),
                         ),
-
-                        const SizedBox(height: 15),
-                        Row(
-                          children: [
-                            Text(
-                              "وصف العاده",
-                              style: TextStyle(
-                                color: AppColors.textSecondary,
-                                fontSize: 20,
-                              ),
-                            ),
-                          ],
-                        ),
-
-                        const SizedBox(height: 15),
-
-                        TextFormField(
-                          controller: habitDescriptionController,
-                          style: TextStyle(color: AppColors.textPrimary),
-                          validator: (value) {
-                            if (value == null || value.trim().isEmpty) {
-                              return "يرجى إدخال وصف العاده";
-                            }
-
-                            return null;
-                          },
-                          decoration: InputDecoration(
-                            fillColor: AppColors.overlay,
-                            filled: true,
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(color: AppColors.border),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(
-                                color: AppColors.border,
-                                width: 2,
-                              ),
-                            ),
-                            errorBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(color: AppColors.danger),
-                            ),
-                            focusedErrorBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(
-                                color: AppColors.danger,
-                                width: 2,
-                              ),
-                            ),
+                        const SizedBox(height: 4),
+                        Text(
+                          habits.isEmpty
+                              ? "ابدأ بعادة صغيرة النهاردة"
+                              : "${habits.length} عادة بتبنيها",
+                          style: const TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 15,
                           ),
-                        ),
-
-
-                        StatefulBuilder(
-                          builder: (context, setAlarmState) {
-                            return ListTile(
-                              contentPadding: EdgeInsets.zero,
-                              leading: Icon(
-                                Icons.alarm,
-                                color: AppColors.textSecondary,
-                              ),
-                              title: Text(
-                                'وقت المنبّه',
-                                style: TextStyle(color: AppColors.textSecondary),
-                              ),
-                              subtitle: Text(
-                                selectedAlarmTime == null
-                                    ? 'بدون منبّه'
-                                    : selectedAlarmTime!.format(context),
-                                style: TextStyle(color: AppColors.textPrimary),
-                              ),
-                              trailing: IconButton(
-                                icon: const Icon(Icons.access_time),
-                                onPressed: () async {
-                                  final picked = await showTimePicker(
-                                    context: context,
-                                    initialTime: selectedAlarmTime ?? TimeOfDay.now(),
-                                  );
-
-                                  if (picked != null) {
-                                    setAlarmState(() {
-                                      selectedAlarmTime = picked;
-                                    });
-                                  }
-                                },
-                              ),
-                            );
-                          },
-                        ),
-
-                        SizedBox(height: 20,),
-                        // Update Button
-                        Button(
-                          text: "تعديل",
-
-                          onPressed: () async {
-                            if (!formKey.currentState!.validate()) {
-                              return;
-                            }
-
-                            final provider = Provider.of<HabitsProvider>(
-                              context,
-                              listen: false,
-                            );
-
-                            provider.editHabit(
-                              habitName: habitNameController.text.trim(),
-                              habitDescription: habitDescriptionController.text.trim(),
-                              index: index,
-                            );
-
-                            if (selectedAlarmTime != null) {
-                              await provider.setHabitAlarm(
-                                index: index,
-                                hour: selectedAlarmTime!.hour,
-                                minute: selectedAlarmTime!.minute,
-                              );
-                            } else {
-                              await provider.removeHabitAlarm(index: index);
-                            }
-
-                            if (!context.mounted) return;
-
-                            Navigator.pop(context);
-
-                            Dialogs.success(
-                              context: context,
-                              message: "تم تعديل العادة بنجاح",
-                            );
-                          },
                         ),
                       ],
                     ),
                   ),
                 ),
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final habits = Provider.of<HabitsProvider>(context).habits;
-    return Scaffold(
-      body: SafeArea(
-        child: Directionality(
-          textDirection: TextDirection.rtl,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 50,
-                  vertical: 10,
-                ),
-                child: Text(
-                  "عاداتي",
-                  style: TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 30,
-                    fontWeight: FontWeight.bold,
+                if (habits.isNotEmpty)
+                  _summaryCard(
+                    done: done,
+                    total: habits.length,
+                    bestStreak: best,
+                  ),
+                Expanded(
+                  child: habits.isEmpty
+                      ? const EmptyState(
+                    icon: Icons.track_changes_rounded,
+                    title: "مفيش عادات لسه",
+                    subtitle: "ضيف عادة عاوز تلتزم بيها كل يوم",
+                  )
+                      : ListView.builder(
+                    physics: const BouncingScrollPhysics(
+                      parent: AlwaysScrollableScrollPhysics(),
+                    ),
+                    padding: const EdgeInsets.only(top: 4, bottom: 130),
+                    itemCount: habits.length,
+                    itemBuilder: (context, index) {
+                      final habit = habits[index];
+                      final hasAlarm = habit.alarmHour != null &&
+                          habit.alarmMinute != null;
+                      return HabitTile(
+                        key: ObjectKey(habit),
+                        index: index,
+                        habitName: habit.habitName,
+                        habitDescription: habit.habitDescription,
+                        habitComplete: habit.habitCompleted,
+                        streakCount: habit.streakCount,
+                        alarmText: hasAlarm
+                            ? TimeOfDay(
+                          hour: habit.alarmHour!,
+                          minute: habit.alarmMinute!,
+                        ).format(context)
+                            : null,
+                        onChanged: (_) => provider.habitCompleted(
+                          index: index,
+                        ),
+                        deleteTask: (_) =>
+                            HabitSheets.confirmDelete(context, index),
+                        updateTask: (_) =>
+                            HabitSheets.edit(context, index),
+                      );
+                    },
                   ),
                 ),
-              ),
-              if(habits.isEmpty)
-                Expanded(
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.track_changes,
-                            size: 70,
-                            color: AppColors.textSecondary,
-                          ),
-
-                          const SizedBox(height: 15),
-
-                          Text(
-                            "مفيش اي عادات يومية",
-                            style: TextStyle(
-                              color: AppColors.textPrimary,
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-
-                          const SizedBox(height: 8),
-
-                          Text(
-                            "ابدأ بأضافة عادات عاوز تلتزم بيها",
-                            style: TextStyle(
-                              color: AppColors.textSecondary,
-                              fontSize: 15,
-                            ),
-                          ),
-                        ],
-                      ),
-                    )
-                ),
-              if(habits.isNotEmpty)
-                Expanded(
-                child: ListView.builder(
-                  itemCount: habits.length,
-                  itemBuilder: (context, index) {
-                    final habit = habits[index];
-                    return HabitTile(
-                      habitName: habit.habitName,
-                      habitDescription: habit.habitDescription,
-                      habitComplete: habit.habitCompleted,
-                      onChanged: (_) {
-                        Provider.of<HabitsProvider>(context, listen: false).habitCompleted(index: index);
-                      },
-                      streakCount: habit.streakCount,
-                      deleteTask: (_) {
-                        confirmation(context: context, message: "هل تريد حذف هذه العاده؟", index: index);
-                      },
-                      updateTask: (_) {
-                        _editHabit(index);
-                      },
-                    );
-                  },
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

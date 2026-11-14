@@ -606,7 +606,7 @@ class _SubjectDetailsState extends State<SubjectDetails> {
                             color: AppColors.accentLight,
                             size: 35,
                           ),
-              
+
                           Expanded(
                             child: Hero(
                               tag: "subject-name-${widget.subjectName}",
@@ -860,9 +860,9 @@ class _SubjectDetailsState extends State<SubjectDetails> {
                               size: 70,
                               color: AppColors.textSecondary,
                             ),
-              
+
                             const SizedBox(height: 15),
-              
+
                             Text(
                               "مفيش دروس",
                               style: TextStyle(
@@ -871,9 +871,9 @@ class _SubjectDetailsState extends State<SubjectDetails> {
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-              
+
                             const SizedBox(height: 8),
-              
+
                             Text(
                               "ابدأ بأضافة اول درس ليك في الماده",
                               style: TextStyle(
