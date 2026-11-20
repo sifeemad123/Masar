@@ -19,7 +19,6 @@ class LessonTile extends StatefulWidget {
   final void Function(BuildContext) onDelete;
   final void Function(BuildContext) onEdit;
 
-  /// Position in the list, used to stagger the entrance animation.
   final int index;
 
   const LessonTile({
@@ -80,10 +79,6 @@ class _LessonTileState extends State<LessonTile>
     _burst.dispose();
     super.dispose();
   }
-
-  // ---------------------------------------------------------------
-  // Pieces
-  // ---------------------------------------------------------------
 
   Widget _checkCircle() {
     return GestureDetector(
@@ -208,11 +203,14 @@ class _LessonTileState extends State<LessonTile>
 
   @override
   Widget build(BuildContext context) {
-    final notesCount = context
+    final lessonNotes = context
         .watch<NotesProvider>()
         .notes
         .where((n) => n.lessonId == widget.lessonId)
-        .length;
+        .toList();
+
+    final notesCount = lessonNotes.where((n) => !n.isSummary).length;
+    final hasSummary = lessonNotes.any((n) => n.isSummary);
 
     final stateColor = done ? AppColors.success : AppColors.accent;
     final stripe = done
@@ -380,27 +378,40 @@ class _LessonTileState extends State<LessonTile>
                                               Icon(
                                                 Icons.sticky_note_2_rounded,
                                                 size: 15,
-                                                color: notesCount == 0
-                                                    ? AppColors.textMuted
-                                                    : AppColors.warm,
+                                                color: notesCount == 0 ? AppColors.textMuted : AppColors.warm,
                                               ),
                                               const SizedBox(width: 5),
                                               Flexible(
                                                 child: Text(
                                                   notesCountText(notesCount),
                                                   maxLines: 1,
-                                                  overflow:
-                                                  TextOverflow.ellipsis,
+                                                  overflow: TextOverflow.ellipsis,
                                                   style: TextStyle(
                                                     color: notesCount == 0
                                                         ? AppColors.textMuted
-                                                        : AppColors
-                                                        .textSecondary,
+                                                        : AppColors.textSecondary,
                                                     fontSize: 12.5,
                                                     fontWeight: FontWeight.w700,
                                                   ),
                                                 ),
                                               ),
+                                              if (hasSummary) ...[
+                                                const SizedBox(width: 10),
+                                                const Icon(
+                                                  Icons.auto_stories_rounded,
+                                                  size: 15,
+                                                  color: AppColors.accent,
+                                                ),
+                                                const SizedBox(width: 4),
+                                                const Text(
+                                                  'ملخص',
+                                                  style: TextStyle(
+                                                    color: AppColors.accent,
+                                                    fontSize: 12.5,
+                                                    fontWeight: FontWeight.w800,
+                                                  ),
+                                                ),
+                                              ],
                                             ],
                                           ),
                                         ],

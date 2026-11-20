@@ -12,21 +12,31 @@ class NotesProvider extends ChangeNotifier {
     required String noteDescription,
     required String noteContent,
     required Color noteColor,
+    bool isSummary = false,
   }) {
     final note = NotesModel()
-        ..lessonId = lessonId
-        ..noteColor = noteColor
-        ..noteContent = noteContent
-        ..noteName = noteName
-        ..noteDescription = noteDescription;
+      ..lessonId = lessonId
+      ..noteColor = noteColor
+      ..noteContent = noteContent
+      ..noteName = noteName
+      ..noteDescription = noteDescription
+      ..isSummary = isSummary;
     notesBox().add(note);
     notifyListeners();
   }
-  void deleteNote({required NotesModel note}){
+
+  void deleteNote({required NotesModel note}) {
     note.delete();
     notifyListeners();
   }
-  void editNote({required NotesModel note, required String noteName, required String noteDescription, required String noteContent, required Color noteColor,}){
+
+  void editNote({
+    required NotesModel note,
+    required String noteName,
+    required String noteDescription,
+    required String noteContent,
+    required Color noteColor,
+  }) {
     note.noteName = noteName;
     note.noteDescription = noteDescription;
     note.noteContent = noteContent;

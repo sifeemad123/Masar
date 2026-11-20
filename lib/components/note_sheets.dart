@@ -36,15 +36,17 @@ const List<Color> kNoteColors = [
   Color(0xFF353331), // Charcoal
 ];
 
-/// Create / edit sheet, details sheet and delete dialog for notes.
+/// Create / edit sheet, details sheet and delete dialog for notes + summaries.
 class NoteSheets {
   NoteSheets._();
 
   /// Pass [note] to edit, leave it null to create a new one.
+  /// Pass [isSummary] = true to create a lesson summary.
   static void show(
       BuildContext context, {
         required int lessonId,
         NotesModel? note,
+        bool isSummary = false,
       }) {
     showModalBottomSheet<void>(
       context: context,
@@ -57,34 +59,38 @@ class NoteSheets {
         rootContext: context,
         lessonId: lessonId,
         note: note,
+        isSummary: note?.isSummary ?? isSummary,
       ),
     );
   }
 
   static Future<void> confirmDelete(BuildContext context, NotesModel note) {
     final provider = Provider.of<NotesProvider>(context, listen: false);
+    final what = note.isSummary ? 'الملخص' : 'الملاحظة';
     return Dialogs.confirm(
       context: context,
-      title: 'حذف الملاحظة',
+      title: 'حذف $what',
       message: 'هتحذف "${note.noteName}" ومش هتقدر ترجعها تاني.',
       confirmText: 'حذف',
       danger: true,
       onConfirm: () {
         provider.deleteNote(note: note);
-        Dialogs.success(context: context, message: 'تم حذف الملاحظة بنجاح');
+        Dialogs.success(context: context, message: 'تم حذف $what بنجاح');
       },
     );
   }
 
-  /// Full note, colored like the note itself.
+  /// Full note / summary.
   static void details(
       BuildContext context,
       NotesModel note, {
         required VoidCallback onEdit,
       }) {
-    final color = note.noteColor;
-    final text = noteTextColor(color);
-    final secondary = noteSecondaryColor(color);
+    final isSummary = note.isSummary;
+    final color = isSummary ? AppColors.surface : note.noteColor;
+    final text = isSummary ? AppColors.textPrimary : noteTextColor(color);
+    final secondary =
+    isSummary ? AppColors.textSecondary : noteSecondaryColor(color);
     final desc = note.noteDescription.trim();
 
     showModalBottomSheet<void>(
@@ -116,6 +122,38 @@ class NoteSheets {
                   ),
                 ),
                 const SizedBox(height: 20),
+                if (isSummary) ...[
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 7,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.accent.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.auto_stories_rounded,
+                          size: 15,
+                          color: AppColors.accent,
+                        ),
+                        SizedBox(width: 6),
+                        Text(
+                          'ملخص الدرس',
+                          style: TextStyle(
+                            color: AppColors.accent,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                ],
                 Text(
                   note.noteName,
                   style: TextStyle(
@@ -130,7 +168,9 @@ class NoteSheets {
                   height: 3,
                   width: 48,
                   decoration: BoxDecoration(
-                    color: text.withValues(alpha: 0.28),
+                    color: isSummary
+                        ? AppColors.accent.withValues(alpha: 0.4)
+                        : text.withValues(alpha: 0.28),
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
@@ -204,6 +244,7 @@ class NoteSheets {
                           name: note.noteName,
                           description: note.noteDescription,
                           content: note.noteContent,
+                          isSummary: isSummary,
                         ),
                         child: Container(
                           height: 52,
@@ -215,7 +256,8 @@ class NoteSheets {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.share_outlined, color: color, size: 20),
+                              Icon(Icons.share_outlined,
+                                  color: color, size: 20),
                               const SizedBox(width: 8),
                               Text(
                                 'مشاركة',
@@ -245,10 +287,12 @@ class _NoteForm extends StatefulWidget {
   final BuildContext rootContext;
   final int lessonId;
   final NotesModel? note;
+  final bool isSummary;
 
   const _NoteForm({
     required this.rootContext,
     required this.lessonId,
+    required this.isSummary,
     this.note,
   });
 
@@ -258,8 +302,10 @@ class _NoteForm extends StatefulWidget {
 
 class _NoteFormState extends State<_NoteForm> {
   final _formKey = GlobalKey<FormState>();
-  late final TextEditingController _name =
-  TextEditingController(text: widget.note?.noteName ?? '');
+
+  late final TextEditingController _name = TextEditingController(
+    text: widget.note?.noteName ?? (widget.isSummary ? 'ملخص الدرس' : ''),
+  );
   late final TextEditingController _description =
   TextEditingController(text: widget.note?.noteDescription ?? '');
   late final TextEditingController _content =
@@ -267,6 +313,7 @@ class _NoteFormState extends State<_NoteForm> {
   late Color _color = widget.note?.noteColor ?? kNoteColors.first;
 
   bool get _editing => widget.note != null;
+  bool get _summary => widget.isSummary;
 
   @override
   void dispose() {
@@ -284,29 +331,35 @@ class _NoteFormState extends State<_NoteForm> {
 
     final provider = context.read<NotesProvider>();
 
+    // الملخص له لون ثابت ومالوش وصف
+    final color = _summary ? AppColors.accent : _color;
+    final description = _summary ? '' : _description.text.trim();
+
     if (_editing) {
       provider.editNote(
         note: widget.note!,
         noteName: _name.text.trim(),
-        noteDescription: _description.text.trim(),
+        noteDescription: description,
         noteContent: _content.text.trim(),
-        noteColor: _color,
+        noteColor: color,
       );
     } else {
       provider.createNote(
         lessonId: widget.lessonId,
         noteName: _name.text.trim(),
-        noteDescription: _description.text.trim(),
+        noteDescription: description,
         noteContent: _content.text.trim(),
-        noteColor: _color,
+        noteColor: color,
+        isSummary: _summary,
       );
     }
+
+    final what = _summary ? 'الملخص' : 'الملاحظة';
 
     Navigator.pop(context);
     Dialogs.success(
       context: widget.rootContext,
-      message:
-      _editing ? 'تم تعديل الملاحظة بنجاح' : 'تمت إضافة الملاحظة بنجاح',
+      message: _editing ? 'تم تعديل $what بنجاح' : 'تمت إضافة $what بنجاح',
     );
   }
 
@@ -373,7 +426,7 @@ class _NoteFormState extends State<_NoteForm> {
 
   @override
   Widget build(BuildContext context) {
-    final contentText = noteTextColor(_color);
+    final contentText = _summary ? AppColors.textPrimary : noteTextColor(_color);
 
     return Padding(
       padding: EdgeInsets.only(
@@ -390,21 +443,26 @@ class _NoteFormState extends State<_NoteForm> {
                 sheetHeader(
                   icon: _editing
                       ? Icons.edit_rounded
-                      : Icons.sticky_note_2_rounded,
-                  title: _editing ? 'تعديل الملاحظة' : 'ملاحظة جديدة',
+                      : (_summary
+                      ? Icons.auto_stories_rounded
+                      : Icons.sticky_note_2_rounded),
+                  title: _summary
+                      ? (_editing ? 'تعديل الملخص' : 'ملخص جديد')
+                      : (_editing ? 'تعديل الملاحظة' : 'ملاحظة جديدة'),
                   onClose: () => Navigator.pop(context),
                 ),
                 const SizedBox(height: 26),
-                sheetLabel('عنوان الملاحظة'),
+                sheetLabel(_summary ? 'عنوان الملخص' : 'عنوان الملاحظة'),
                 TextFormField(
                   controller: _name,
                   textInputAction: TextInputAction.next,
                   style: _fieldStyle,
                   validator: (v) => v == null || v.trim().isEmpty
-                      ? 'اكتب عنوان الملاحظة'
+                      ? (_summary ? 'اكتب عنوان الملخص' : 'اكتب عنوان الملاحظة')
                       : null,
-                  decoration: sheetInputDecoration(hint: 'مثلاً: القانون التاني')
-                      .copyWith(
+                  decoration: sheetInputDecoration(
+                    hint: _summary ? 'مثلاً: ملخص قوانين نيوتن' : 'مثلاً: القانون التاني',
+                  ).copyWith(
                     prefixIcon: const Icon(
                       Icons.title_rounded,
                       color: AppColors.accent,
@@ -412,26 +470,28 @@ class _NoteFormState extends State<_NoteForm> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 22),
-                sheetLabel('وصف الملاحظة'),
-                TextFormField(
-                  controller: _description,
-                  textInputAction: TextInputAction.next,
-                  style: _fieldStyle,
-                  validator: (v) => v == null || v.trim().isEmpty
-                      ? 'اكتب وصف الملاحظة'
-                      : null,
-                  decoration: sheetInputDecoration(hint: 'وصف مختصر')
-                      .copyWith(
-                    prefixIcon: const Icon(
-                      Icons.notes_rounded,
-                      color: AppColors.accent,
-                      size: 21,
+                if (!_summary) ...[
+                  const SizedBox(height: 22),
+                  sheetLabel('وصف الملاحظة'),
+                  TextFormField(
+                    controller: _description,
+                    textInputAction: TextInputAction.next,
+                    style: _fieldStyle,
+                    validator: (v) => v == null || v.trim().isEmpty
+                        ? 'اكتب وصف الملاحظة'
+                        : null,
+                    decoration: sheetInputDecoration(hint: 'وصف مختصر')
+                        .copyWith(
+                      prefixIcon: const Icon(
+                        Icons.notes_rounded,
+                        color: AppColors.accent,
+                        size: 21,
+                      ),
                     ),
                   ),
-                ),
+                ],
                 const SizedBox(height: 22),
-                sheetLabel('محتوى الملاحظة'),
+                sheetLabel(_summary ? 'ملخص الدرس' : 'محتوى الملاحظة'),
                 TextFormField(
                   controller: _content,
                   keyboardType: TextInputType.multiline,
@@ -445,23 +505,33 @@ class _NoteFormState extends State<_NoteForm> {
                     height: 1.7,
                   ),
                   validator: (v) => v == null || v.trim().isEmpty
-                      ? 'مينفعش تسيب محتوى الملاحظة فاضي'
+                      ? (_summary
+                      ? 'اكتب ملخص الدرس'
+                      : 'مينفعش تسيب محتوى الملاحظة فاضي')
                       : null,
-                  decoration:
-                  sheetInputDecoration(hint: 'اكتب محتوى الملاحظة هنا')
-                      .copyWith(
-                    fillColor: _color,
+                  decoration: sheetInputDecoration(
+                    hint: _summary
+                        ? 'لخّص أهم نقاط الدرس بأسلوبك...'
+                        : 'اكتب محتوى الملاحظة هنا',
+                  ).copyWith(
+                    fillColor: _summary ? AppColors.surfaceAlt : _color,
                     hintStyle: TextStyle(
-                      color: contentText.withValues(alpha: 0.55),
+                      color: _summary
+                          ? AppColors.textMuted
+                          : contentText.withValues(alpha: 0.55),
                     ),
                   ),
                 ),
-                const SizedBox(height: 22),
-                sheetLabel('لون الملاحظة'),
-                _colorPicker(),
+                if (!_summary) ...[
+                  const SizedBox(height: 22),
+                  sheetLabel('لون الملاحظة'),
+                  _colorPicker(),
+                ],
                 const SizedBox(height: 26),
                 GradientButton(
-                  text: _editing ? 'حفظ التعديل' : 'إضافة الملاحظة',
+                  text: _summary
+                      ? (_editing ? 'حفظ التعديل' : 'حفظ الملخص')
+                      : (_editing ? 'حفظ التعديل' : 'إضافة الملاحظة'),
                   onTap: _save,
                 ),
               ],

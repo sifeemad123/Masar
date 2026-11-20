@@ -21,13 +21,14 @@ class NotesModelAdapter extends TypeAdapter<NotesModel> {
       ..noteName = fields[1] as String
       ..noteDescription = fields[2] as String
       ..noteContent = fields[3] as String
-      ..noteColorValue = fields[4] as int;
+      ..noteColorValue = fields[4] as int
+      ..isSummary = fields[5] == null ? false : fields[5] as bool;
   }
 
   @override
   void write(BinaryWriter writer, NotesModel obj) {
     writer
-      ..writeByte(5)
+      ..writeByte(6)
       ..writeByte(0)
       ..write(obj.lessonId)
       ..writeByte(1)
@@ -37,7 +38,9 @@ class NotesModelAdapter extends TypeAdapter<NotesModel> {
       ..writeByte(3)
       ..write(obj.noteContent)
       ..writeByte(4)
-      ..write(obj.noteColorValue);
+      ..write(obj.noteColorValue)
+      ..writeByte(5)
+      ..write(obj.isSummary);
   }
 
   @override
@@ -46,7 +49,7 @@ class NotesModelAdapter extends TypeAdapter<NotesModel> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is NotesModelAdapter &&
-          runtimeType == other.runtimeType &&
-          typeId == other.typeId;
+          other is NotesModelAdapter &&
+              runtimeType == other.runtimeType &&
+              typeId == other.typeId;
 }

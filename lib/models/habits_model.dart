@@ -1,4 +1,3 @@
-
 import 'package:hive/hive.dart';
 
 part 'habits_model.g.dart';
@@ -25,4 +24,10 @@ class HabitsModel extends HiveObject {
 
   @HiveField(6)
   late int? alarmMinute;
+
+  @HiveField(7)
+  int protectionUsesThisMonth = 0;
+
+  @HiveField(8)
+  String? protectionMonthKey;
 }

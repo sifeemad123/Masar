@@ -21,6 +21,9 @@ class NotesModel extends HiveObject {
   @HiveField(4)
   late int noteColorValue;
 
+  @HiveField(5)
+  bool isSummary = false;
+
   Color get noteColor => Color(noteColorValue);
 
   set noteColor(Color color) {

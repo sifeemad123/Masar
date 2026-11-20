@@ -1,17 +1,20 @@
 
 import 'dart:async';
 
+import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:masar/models/tasks_model.dart';
 import 'package:masar/models/habits_model.dart';
+import 'package:masar/models/tasks_model.dart';
+import 'package:masar/Screens/alarm_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/data/latest.dart' as tz_data;
 import 'package:timezone/timezone.dart' as tz;
 
 class NotificationsService {
+
   final FlutterLocalNotificationsPlugin plugin =
   FlutterLocalNotificationsPlugin();
 
@@ -28,7 +31,7 @@ class NotificationsService {
   static int habitSnoozeId(int key) => _habitSnoozeOffset + key;
 
   static const String _taskChannelId = 'tasks_channel_v3';
-  static const String _habitChannelId = 'habits_channel_v3';
+  static const String _habitChannelId = 'habits_alarm_channel_v4';
   static const String _motivationChannelId = 'motivation_channel_v1';
 
   static const String _taskDone = 'task_done';
@@ -38,6 +41,42 @@ class NotificationsService {
   static const String _habitDone = 'habit_done';
   static const String _habitSnooze = 'habit_snooze';
 
+  static final GlobalKey<NavigatorState> navigatorKey =
+  GlobalKey<NavigatorState>();
+
+  static int? pendingHabitAlarmKey;
+
+  static bool _alarmOpening = false;
+
+  static void openHabitAlarm(int habitKey) {
+    final navigator = navigatorKey.currentState;
+
+    if (navigator == null) {
+      pendingHabitAlarmKey = habitKey;
+      return;
+    }
+
+    if (_alarmOpening) return;
+
+    pendingHabitAlarmKey = null;
+    _alarmOpening = true;
+
+    navigator.push(
+      MaterialPageRoute(
+        builder: (_) => AlarmScreen(habitKey: habitKey),
+      ),
+    ).then((_) {
+      _alarmOpening = false;
+    });
+  }
+
+  static void openPendingAlarm() {
+    final key = pendingHabitAlarmKey;
+
+    if (key != null) {
+      openHabitAlarm(key);
+    }
+  }
 
   static const List<String> _motivationalMessages = [
     // ===== البداية والاستمرارية =====
@@ -273,7 +312,6 @@ class NotificationsService {
     'كل يوم بتختار فيه الخير لنفسك هو يوم يستحق التقدير.',
   ];
 
-
   bool _initialized = false;
 
   static const AndroidNotificationAction _taskDoneAction =
@@ -330,12 +368,14 @@ class NotificationsService {
   static const AndroidNotificationDetails _habitDetails =
   AndroidNotificationDetails(
     _habitChannelId,
-    'تذكيرات العادات',
-    channelDescription: 'تذكيرات العادات اليومية',
+    'منبهات العادات',
+    channelDescription: 'منبهات العادات اليومية',
     importance: Importance.max,
-    priority: Priority.high,
+    priority: Priority.max,
     playSound: true,
     enableVibration: true,
+    category: AndroidNotificationCategory.alarm,
+    fullScreenIntent: true,
     actions: [
       _habitDoneAction,
       _habitSnoozeAction,
@@ -353,11 +393,47 @@ class NotificationsService {
     enableVibration: false,
   );
 
-  Future<void> initNotification() async {
-    if (_initialized) return;
 
-    WidgetsFlutterBinding.ensureInitialized();
+  Future<void> _resetHabitIfNeeded(HabitsModel habit) async {
+    final lastCompleted = habit.lastCompletedDate;
 
+    if (lastCompleted == null) return;
+
+    final now = DateTime.now();
+
+    final today = DateTime.utc(
+      now.year,
+      now.month,
+      now.day,
+    );
+
+    final lastDay = DateTime.utc(
+      lastCompleted.year,
+      lastCompleted.month,
+      lastCompleted.day,
+    );
+
+    final daysPassed = today.difference(lastDay).inDays;
+
+    bool changed = false;
+
+    if (daysPassed >= 1 && habit.habitCompleted) {
+      habit.habitCompleted = false;
+      changed = true;
+    }
+
+    if (daysPassed >= 2 && habit.streakCount != 0) {
+      habit.streakCount = 0;
+      changed = true;
+    }
+
+    if (changed) {
+      await habit.save();
+    }
+  }
+
+
+  Future<void> _initializeTimezone() async {
     tz_data.initializeTimeZones();
 
     try {
@@ -365,10 +441,16 @@ class NotificationsService {
       tz.setLocalLocation(
         tz.getLocation(timezoneInfo.identifier),
       );
-    } catch (e) {
-      // Keep the timezone package default if device timezone
-      // cannot be retrieved.
+    } catch (_) {
     }
+  }
+
+  Future<void> initNotification() async {
+    if (_initialized) return;
+
+    WidgetsFlutterBinding.ensureInitialized();
+
+    await _initializeTimezone();
 
     const androidSettings = AndroidInitializationSettings(
       '@mipmap/launcher_icon',
@@ -385,11 +467,21 @@ class NotificationsService {
       notificationTapBackground,
     );
 
+    // لا نوقف التطبيق لو المستخدم رفض إحدى الصلاحيات.
     final androidPlugin = plugin.resolvePlatformSpecificImplementation<
         AndroidFlutterLocalNotificationsPlugin>();
 
-    await androidPlugin?.requestNotificationsPermission();
-    await androidPlugin?.requestExactAlarmsPermission();
+    try {
+      await androidPlugin?.requestNotificationsPermission();
+    } catch (_) {}
+
+    try {
+      await androidPlugin?.requestExactAlarmsPermission();
+    } catch (_) {}
+
+    try {
+      await androidPlugin?.requestFullScreenIntentPermission();
+    } catch (_) {}
 
     _initialized = true;
 
@@ -398,17 +490,55 @@ class NotificationsService {
     if (prefs.getBool('motivationRemindersEnabled') ?? false) {
       await scheduleMotivationalReminders();
     }
+
+    // معرفة هل التطبيق اتفتح من إشعار عادة.
+    final launchDetails =
+    await plugin.getNotificationAppLaunchDetails();
+
+    if (launchDetails?.didNotificationLaunchApp ?? false) {
+      final response = launchDetails?.notificationResponse;
+
+      if (response != null && response.actionId == null) {
+        _handleHabitPayload(response.payload);
+      }
+    }
+  }
+
+  static void _handleHabitPayload(String? payload) {
+    if (payload == null) return;
+
+    final parts = payload.split(':');
+
+    if (parts.length != 2 || parts[0] != 'habit') return;
+
+    final key = int.tryParse(parts[1]);
+
+    if (key != null) {
+      pendingHabitAlarmKey = key;
+      openPendingAlarm();
+    }
   }
 
   void _onNotificationResponse(NotificationResponse response) {
-    if (response.actionId == null) return;
+    if (response.actionId != null) {
+      unawaited(_handleAction(response));
+      return;
+    }
 
-    unawaited(_handleAction(response));
+    _handleHabitPayload(response.payload);
   }
 
-  // ============================================================
-  // TASK NOTIFICATIONS
-  // ============================================================
+  Future<void> completeHabitFromAlarm(int habitKey) async {
+    await _ensureInitialized();
+    await _handleHabitAction(habitKey, _habitDone);
+  }
+
+  Future<void> snoozeHabitFromAlarm(int habitKey) async {
+    await _ensureInitialized();
+    await _handleHabitAction(habitKey, _habitSnooze);
+  }
+
+  // ========================= TASK NOTIFICATIONS =========================
 
   Future<void> deadLineScheduleTaskNotification({
     required int taskKey,
@@ -417,10 +547,7 @@ class NotificationsService {
   }) async {
     await _ensureInitialized();
 
-    final scheduledDate = tz.TZDateTime.from(
-      taskDate,
-      tz.local,
-    );
+    final scheduledDate = tz.TZDateTime.from(taskDate, tz.local);
 
     if (!scheduledDate.isAfter(tz.TZDateTime.now(tz.local))) {
       return;
@@ -446,10 +573,7 @@ class NotificationsService {
   }) async {
     await _ensureInitialized();
 
-    final scheduledDate = tz.TZDateTime.from(
-      startDate,
-      tz.local,
-    );
+    final scheduledDate = tz.TZDateTime.from(startDate, tz.local);
 
     if (!scheduledDate.isAfter(tz.TZDateTime.now(tz.local))) {
       return;
@@ -494,9 +618,7 @@ class NotificationsService {
     );
   }
 
-  // ============================================================
-  // HABIT NOTIFICATIONS
-  // ============================================================
+  // ========================= HABIT NOTIFICATIONS =========================
 
   Future<void> scheduleHabitAlarm({
     required int habitKey,
@@ -553,8 +675,8 @@ class NotificationsService {
 
     await plugin.zonedSchedule(
       id: habitSnoozeId(habitKey),
-      title: 'لسه عندك وقت',
-      body: 'تقدر ترجع لعادتك دلوقتي وتكمل يومك.',
+      title: 'تذكير بعادتك',
+      body: 'عدّى وقت التأجيل! ارجع كمل عادتك.',
       scheduledDate: scheduledDate,
       notificationDetails: const NotificationDetails(
         android: _habitDetails,
@@ -564,9 +686,7 @@ class NotificationsService {
     );
   }
 
-  // ============================================================
-  // MOTIVATIONAL NOTIFICATIONS
-  // ============================================================
+  // ========================= MOTIVATIONAL NOTIFICATIONS =========================
 
   Future<void> setMotivationalRemindersEnabled(bool enabled) async {
     final prefs = await SharedPreferences.getInstance();
@@ -583,9 +703,7 @@ class NotificationsService {
   Future<void> scheduleMotivationalReminders() async {
     await _ensureInitialized();
 
-    // 9 AM, 12 PM, 3 PM, 6 PM, 9 PM.
-    // This keeps reminders away from typical sleeping hours.
-    const hours = [9, 12, 15, 18, 21];
+    const hours = [1, 3, 5, 7, 10, 12, 15, 17, 20, 22, 24];
 
     final now = tz.TZDateTime.now(tz.local);
 
@@ -601,15 +719,14 @@ class NotificationsService {
       );
 
       if (!scheduledDate.isAfter(now)) {
-        scheduledDate = scheduledDate.add(
-          const Duration(days: 1),
-        );
+        scheduledDate = scheduledDate.add(const Duration(days: 1));
       }
 
       await plugin.zonedSchedule(
         id: _motivationOffset + i,
         title: 'رسالة من مسار',
-        body: _motivationalMessages[i],
+        body: _motivationalMessages[
+        i % _motivationalMessages.length],
         scheduledDate: scheduledDate,
         notificationDetails: const NotificationDetails(
           android: _motivationDetails,
@@ -626,13 +743,10 @@ class NotificationsService {
     }
   }
 
-  // ============================================================
-  // ACTION HANDLING
-  // ============================================================
+  // ========================= ACTION HANDLING =========================
 
   Future<void> _handleAction(NotificationResponse response) async {
     final action = response.actionId;
-
     final payload = response.payload ?? '';
     final parts = payload.split(':');
 
@@ -651,6 +765,8 @@ class NotificationsService {
   }
 
   Future<void> _handleTaskAction(int key, String? action) async {
+    if (!Hive.isBoxOpen('tasksBox')) return;
+
     final box = Hive.box<TasksModel>('tasksBox');
     final task = box.get(key);
 
@@ -667,8 +783,7 @@ class NotificationsService {
         break;
 
       case _taskNotDone:
-      // The notification is dismissed.
-      // The task remains incomplete.
+      // المهمة تظل غير مكتملة.
         break;
 
       case _taskSnooze:
@@ -678,10 +793,13 @@ class NotificationsService {
   }
 
   Future<void> _handleHabitAction(int key, String? action) async {
+    if (!Hive.isBoxOpen('habitsBox')) return;
+
     final box = Hive.box<HabitsModel>('habitsBox');
     final habit = box.get(key);
 
     if (habit == null) return;
+    await _resetHabitIfNeeded(habit);
 
     switch (action) {
       case _habitDone:
@@ -694,6 +812,7 @@ class NotificationsService {
           await habit.save();
         }
 
+        // مهم: لا نلغي المنبه اليومي المتكرر عند إنجاز عادة اليوم.
         await plugin.cancel(id: habitSnoozeId(key));
         break;
 
@@ -710,13 +829,12 @@ class NotificationsService {
   }
 
   Future<void> cancelAllNotifications() async {
+    await _ensureInitialized();
     await plugin.cancelAll();
   }
 }
 
-// ============================================================
-// BACKGROUND CALLBACK
-// ============================================================
+// ========================= BACKGROUND CALLBACK =========================
 
 @pragma('vm:entry-point')
 Future<void> notificationTapBackground(
@@ -724,15 +842,23 @@ Future<void> notificationTapBackground(
     ) async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // This callback runs in a separate isolate.
-  // Initialize Hive and register adapters in that isolate.
+  tz_data.initializeTimeZones();
+
+  try {
+    final timezoneInfo = await FlutterTimezone.getLocalTimezone();
+
+    tz.setLocalLocation(
+      tz.getLocation(timezoneInfo.identifier),
+    );
+  } catch (_) {}
+
   await Hive.initFlutter();
 
-  if (!Hive.isAdapterRegistered(0)) {
+  if (!Hive.isAdapterRegistered(TasksModelAdapter().typeId)) {
     Hive.registerAdapter(TasksModelAdapter());
   }
 
-  if (!Hive.isAdapterRegistered(1)) {
+  if (!Hive.isAdapterRegistered(HabitsModelAdapter().typeId)) {
     Hive.registerAdapter(HabitsModelAdapter());
   }
 
@@ -745,6 +871,21 @@ Future<void> notificationTapBackground(
   }
 
   final service = NotificationsService();
+
+  const androidSettings = AndroidInitializationSettings(
+    '@mipmap/launcher_icon',
+  );
+
+  const settings = InitializationSettings(
+    android: androidSettings,
+  );
+
+  await service.plugin.initialize(
+    settings: settings,
+  );
+
+  // منع إعادة طلب صلاحيات النظام من الـ Background Isolate.
+  service._initialized = true;
 
   await service._handleAction(response);
 }

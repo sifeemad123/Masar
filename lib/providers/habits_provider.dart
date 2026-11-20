@@ -10,6 +10,106 @@ class HabitsProvider extends ChangeNotifier {
 
   List<HabitsModel> get habits => habitsBox().values.toList();
 
+  static const int monthlyProtectionLimit = 3;
+
+  String get _currentMonthKey {
+    final now = DateTime.now();
+
+    return '${now.year}-${now.month.toString().padLeft(2, '0')}';
+  }
+
+  int _daysPassed(DateTime lastDate) {
+    final now = DateTime.now();
+
+    final today = DateTime.utc(
+      now.year,
+      now.month,
+      now.day,
+    );
+
+    final lastDay = DateTime.utc(
+      lastDate.year,
+      lastDate.month,
+      lastDate.day,
+    );
+
+    return today.difference(lastDay).inDays;
+  }
+
+  int remainingProtectionChances(HabitsModel habit) {
+    if (habit.protectionMonthKey != _currentMonthKey) {
+      return monthlyProtectionLimit;
+    }
+
+    return (monthlyProtectionLimit - habit.protectionUsesThisMonth)
+        .clamp(0, monthlyProtectionLimit)
+        .toInt();
+  }
+
+  bool canProtectStreak(HabitsModel habit) {
+    final lastCompleted = habit.lastCompletedDate;
+
+    if (lastCompleted == null || habit.habitCompleted) {
+      return false;
+    }
+
+    return _daysPassed(lastCompleted) == 2 &&
+        habit.streakCount > 0 &&
+        remainingProtectionChances(habit) > 0;
+  }
+
+  Future<bool> _resetMonthlyProtectionIfNeeded(
+      HabitsModel habit,
+      ) async {
+    if (habit.protectionMonthKey == _currentMonthKey) {
+      return false;
+    }
+
+    habit
+      ..protectionMonthKey = _currentMonthKey
+      ..protectionUsesThisMonth = 0;
+
+    await habit.save();
+
+    return true;
+  }
+
+  Future<bool> _resetHabitIfNeeded(
+      HabitsModel habit, {
+        bool preserveProtectableStreak = true,
+      }) async {
+    final lastCompleted = habit.lastCompletedDate;
+
+    if (lastCompleted == null) return false;
+
+    final daysPassed = _daysPassed(lastCompleted);
+
+    bool changed = false;
+
+    if (daysPassed >= 1 && habit.habitCompleted) {
+      habit.habitCompleted = false;
+      changed = true;
+    }
+
+    if (daysPassed >= 2 && habit.streakCount != 0) {
+      final canKeepStreak =
+          preserveProtectableStreak &&
+              daysPassed == 2 &&
+              remainingProtectionChances(habit) > 0;
+
+      if (!canKeepStreak) {
+        habit.streakCount = 0;
+        changed = true;
+      }
+    }
+
+    if (changed) {
+      await habit.save();
+    }
+
+    return changed;
+  }
+
   Future<void> addHabit({
     required String habitName,
     required String habitDescription,
@@ -21,7 +121,9 @@ class HabitsProvider extends ChangeNotifier {
       ..streakCount = 0
       ..lastCompletedDate = null
       ..alarmHour = null
-      ..alarmMinute = null;
+      ..alarmMinute = null
+      ..protectionUsesThisMonth = 0
+      ..protectionMonthKey = _currentMonthKey;
 
     await habitsBox().add(habit);
 
@@ -37,14 +139,47 @@ class HabitsProvider extends ChangeNotifier {
     }
 
     await habit.delete();
+
     notifyListeners();
   }
 
-  Future<void> habitCompleted({required int index}) async {
-    final habit = habits[index];
+  // ---------------------------------------------------------------
+  // Complete habit + automatic streak protection
+  // ---------------------------------------------------------------
 
-    if (habit.habitCompleted) return;
+  Future<bool> habitCompleted({required int index}) async {
+    final currentHabits = habits;
 
+    if (index < 0 || index >= currentHabits.length) {
+      return false;
+    }
+
+    final habit = currentHabits[index];
+
+    // Prevent completing the same habit more than once per day.
+    if (habit.habitCompleted) {
+      return false;
+    }
+
+    await _resetMonthlyProtectionIfNeeded(habit);
+
+    // Check protection BEFORE resetting the streak.
+    final shouldUseProtection = canProtectStreak(habit);
+
+    // Keep the streak only if this completion can protect it.
+    await _resetHabitIfNeeded(
+      habit,
+      preserveProtectableStreak: shouldUseProtection,
+    );
+
+    // Consume exactly one chance when protection is actually needed.
+    if (shouldUseProtection) {
+      habit
+        ..protectionUsesThisMonth += 1
+        ..protectionMonthKey = _currentMonthKey;
+    }
+
+    // Complete today's habit.
     habit
       ..habitCompleted = true
       ..streakCount += 1
@@ -53,21 +188,34 @@ class HabitsProvider extends ChangeNotifier {
     await habit.save();
 
     notifyListeners();
+
+    // Returns true if a protection chance was consumed.
+    return shouldUseProtection;
   }
 
-  void editHabit({
+  // ---------------------------------------------------------------
+  // Edit habit
+  // ---------------------------------------------------------------
+
+  Future<void> editHabit({
     required String habitName,
     required String habitDescription,
     required int index,
-  }) {
+  }) async {
     final habit = habits[index];
 
-    habit.habitName = habitName;
-    habit.habitDescription = habitDescription;
+    habit
+      ..habitName = habitName
+      ..habitDescription = habitDescription;
 
-    habit.save();
+    await habit.save();
+
     notifyListeners();
   }
+
+  // ---------------------------------------------------------------
+  // Habit alarm
+  // ---------------------------------------------------------------
 
   Future<void> setHabitAlarm({
     required int index,
@@ -110,40 +258,33 @@ class HabitsProvider extends ChangeNotifier {
       ..alarmMinute = null;
 
     await habit.save();
+
     notifyListeners();
   }
 
-  void resetCompletedHabits() {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
+  // ---------------------------------------------------------------
+  // Daily reset
+  // ---------------------------------------------------------------
+
+  Future<void> resetCompletedHabits() async {
     bool hasChanges = false;
 
     for (final habit in habits) {
-      final lastCompleted = habit.lastCompletedDate;
+      final monthlyReset =
+      await _resetMonthlyProtectionIfNeeded(habit);
 
-      if (lastCompleted == null) continue;
-
-      final lastDay = DateTime(
-        lastCompleted.year,
-        lastCompleted.month,
-        lastCompleted.day,
+      final habitReset = await _resetHabitIfNeeded(
+        habit,
+        preserveProtectableStreak: true,
       );
 
-      final daysPassed = today.difference(lastDay).inDays;
-
-      if (daysPassed >= 1 && habit.habitCompleted) {
-        habit.habitCompleted = false;
-        habit.save();
-        hasChanges = true;
-      }
-
-      if (daysPassed >= 2 && habit.streakCount != 0) {
-        habit.streakCount = 0;
-        habit.save();
+      if (monthlyReset || habitReset) {
         hasChanges = true;
       }
     }
 
-    if (hasChanges) notifyListeners();
+    if (hasChanges) {
+      notifyListeners();
+    }
   }
 }

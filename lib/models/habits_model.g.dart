@@ -23,13 +23,15 @@ class HabitsModelAdapter extends TypeAdapter<HabitsModel> {
       ..streakCount = fields[3] as int
       ..lastCompletedDate = fields[4] as DateTime?
       ..alarmHour = fields[5] as int?
-      ..alarmMinute = fields[6] as int?;
+      ..alarmMinute = fields[6] as int?
+      ..protectionUsesThisMonth = (fields[7] as int?) ?? 0
+      ..protectionMonthKey = fields[8] as String?;
   }
 
   @override
   void write(BinaryWriter writer, HabitsModel obj) {
     writer
-      ..writeByte(7)
+      ..writeByte(9)
       ..writeByte(0)
       ..write(obj.habitName)
       ..writeByte(1)
@@ -43,7 +45,11 @@ class HabitsModelAdapter extends TypeAdapter<HabitsModel> {
       ..writeByte(5)
       ..write(obj.alarmHour)
       ..writeByte(6)
-      ..write(obj.alarmMinute);
+      ..write(obj.alarmMinute)
+      ..writeByte(7)
+      ..write(obj.protectionUsesThisMonth)
+      ..writeByte(8)
+      ..write(obj.protectionMonthKey);
   }
 
   @override
@@ -52,7 +58,7 @@ class HabitsModelAdapter extends TypeAdapter<HabitsModel> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is HabitsModelAdapter &&
-          runtimeType == other.runtimeType &&
-          typeId == other.typeId;
+          other is HabitsModelAdapter &&
+              runtimeType == other.runtimeType &&
+              typeId == other.typeId;
 }
