@@ -1652,46 +1652,11 @@
 @media(prefers-reduced-motion:reduce){.study-panel,.study-panel:hover{transition:none;transform:none}}
 
 
-/* Figma-inspired editorial sections */
-.value-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;padding:24px;border-radius:28px;background:rgba(255,255,255,.58);border:1px solid rgba(169,201,202,.7);backdrop-filter:blur(14px)}
-.value-item{text-align:center;padding:8px}.value-item b{display:block;font-size:clamp(1.35rem,3vw,2rem);color:var(--accent);line-height:1.3}.value-item span{font-size:.82rem;color:var(--ink-2)}
-.feature-story{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:center;padding:clamp(22px,4vw,44px);border-radius:32px;background:linear-gradient(140deg,rgba(255,255,255,.92),rgba(229,240,242,.75));border:1px solid var(--border);overflow:hidden;position:relative}
-.feature-story.reverse{background:linear-gradient(140deg,#00515a,#006d77);color:#fff;border-color:transparent}
-.feature-story>*{min-width:0;position:relative;z-index:1}
-.feature-story h2{font-size:clamp(1.5rem,3.2vw,2.25rem);line-height:1.3;margin:9px 0 12px}
-.feature-story p{color:var(--ink-2);font-size:.97rem;max-width:34em}
-.feature-story.reverse p{color:rgba(255,255,255,.8)}
-.feature-story ul{padding:0 20px 0 0;margin:18px 0 0;color:var(--ink-2);font-size:.88rem;display:grid;gap:7px}
-.feature-story.reverse ul{color:rgba(255,255,255,.85)}
-.story-tag{font-size:.76rem;font-weight:700;color:var(--accent)}
-.feature-story.reverse .story-tag{color:#a8d8d3}
-.story-visual{min-height:260px;display:grid;place-items:center;position:relative}
-.story-visual:before{content:"";position:absolute;width:230px;height:230px;border-radius:50%;background:rgba(131,197,190,.24);filter:blur(1px)}
-.reverse .story-visual:before{background:rgba(255,255,255,.12)}
-.story-phone{position:relative;width:min(100%,245px);padding:17px 14px 22px;border:7px solid #092f34;border-radius:32px;background:#edf6f9;box-shadow:0 25px 45px -24px rgba(0,38,43,.55);transform:rotate(-5deg);transition:transform .7s cubic-bezier(.2,.8,.2,1)}
-.feature-story:hover .story-phone{transform:rotate(0) translateY(-7px)}
-.story-phone-head{display:flex;justify-content:space-between;align-items:center;font-size:.7rem;color:var(--ink-2);margin-bottom:12px}
-.story-phone-hero{padding:14px;border-radius:17px;background:linear-gradient(135deg,var(--accent),var(--accent-dark));color:#fff;margin-bottom:11px}
-.story-phone-hero b{font-size:1rem;display:block}.story-phone-hero small{color:rgba(255,255,255,.8)}
-.story-task{display:flex;align-items:center;gap:8px;padding:10px;margin-top:7px;border-radius:13px;background:#fff;border:1px solid var(--divider);font-size:.67rem}
-.story-task i{width:21px;height:21px;flex:none;border:1.5px solid var(--accent-light);border-radius:50%;display:grid;place-items:center;color:white;font-style:normal}
-.story-task.done i{background:var(--success);border-color:var(--success)}
-.story-task span{flex:1}.story-task small{color:var(--ink-3);font-size:.58rem}
-.habit-dial{width:145px;height:145px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(#fff 0 72%,rgba(255,255,255,.18) 72% 100%);box-shadow:0 18px 40px -22px rgba(0,0,0,.4);position:relative}
-.habit-dial:before{content:"";position:absolute;inset:10px;border-radius:50%;background:linear-gradient(145deg,#087e83,#00515a)}
-.habit-dial strong{position:relative;color:white;font-size:1.65rem}
-.habit-bubbles{display:flex;gap:8px;margin-top:16px}
-.habit-bubbles span{width:36px;height:36px;border-radius:12px;background:rgba(255,255,255,.18);display:grid;place-items:center;color:#fff;font-size:.75rem}
-.promise-section{display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:center;padding:clamp(24px,4vw,42px);border-radius:30px;background:#e5f0f2}
-.promise-quote{padding:22px;border-radius:22px;background:#fff;box-shadow:0 12px 28px -20px rgba(0,81,90,.35);font-size:1.1rem;font-weight:700;line-height:1.8}
-.promise-quote small{display:block;color:var(--accent);font-size:.72rem;margin-top:10px}
-.privacy-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-.privacy-item{text-align:center;padding:20px 14px;border-radius:20px;background:rgba(255,255,255,.75);border:1px solid var(--divider)}
-.privacy-item b{display:block;margin:8px 0 4px;font-size:.9rem}.privacy-item p{font-size:.75rem;color:var(--ink-2)}
-.final-cta{padding:clamp(32px,6vw,64px);text-align:center;border-radius:34px;color:#fff;background:radial-gradient(circle at 15% 0,rgba(131,197,190,.18),transparent 35%),linear-gradient(145deg,#006d77,#003f46);box-shadow:0 22px 50px -28px rgba(0,81,90,.65)}
-.final-cta h2{font-size:clamp(1.7rem,4vw,2.6rem);margin:10px 0}.final-cta p{color:rgba(255,255,255,.78);max-width:38em;margin:0 auto 22px}.final-cta .btn{background:#fff;color:var(--accent);box-shadow:0 12px 24px -12px rgba(0,0,0,.4)}
-@media(max-width:760px){.value-strip{gap:4px;padding:14px 8px}.value-item{padding:6px 2px}.value-item span{font-size:.67rem}.feature-story,.promise-section{grid-template-columns:1fr}.feature-story.reverse .story-visual{order:2}.story-visual{min-height:235px}.privacy-row{grid-template-columns:1fr}.feature-story{padding:24px}.feature-story p{font-size:.9rem}}
-@media(prefers-reduced-motion:reduce){.story-phone,.feature-story:hover .story-phone{transition:none;transform:none}}
+.value-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;padding:24px;border-radius:28px;background:rgba(255,255,255,.58);border:1px solid rgba(169,201,202,.7);backdrop-filter:blur(14px)}.value-item{text-align:center;padding:8px}.value-item b{display:block;font-size:clamp(1.35rem,3vw,2rem);color:var(--accent);line-height:1.3}.value-item span{font-size:.82rem;color:var(--ink-2)}
+.feature-story{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:center;padding:clamp(22px,4vw,44px);border-radius:32px;background:linear-gradient(140deg,rgba(255,255,255,.92),rgba(229,240,242,.75));border:1px solid var(--border);overflow:hidden;position:relative}.feature-story.reverse{background:linear-gradient(140deg,#00515a,#006d77);color:#fff;border-color:transparent}.feature-story>*{min-width:0;position:relative;z-index:1}.feature-story h2{font-size:clamp(1.5rem,3.2vw,2.25rem);line-height:1.3;margin:9px 0 12px}.feature-story p{color:var(--ink-2);font-size:.97rem;max-width:34em}.feature-story.reverse p{color:rgba(255,255,255,.8)}.feature-story ul{padding:0 20px 0 0;margin:18px 0 0;color:var(--ink-2);font-size:.88rem;display:grid;gap:7px}.feature-story.reverse ul{color:rgba(255,255,255,.85)}.story-tag{font-size:.76rem;font-weight:700;color:var(--accent)}.feature-story.reverse .story-tag{color:#a8d8d3}
+.story-visual{min-height:260px;display:grid;place-items:center;position:relative}.story-visual:before{content:"";position:absolute;width:230px;height:230px;border-radius:50%;background:rgba(131,197,190,.24)}.reverse .story-visual:before{background:rgba(255,255,255,.12)}.story-phone{position:relative;width:min(100%,245px);padding:17px 14px 22px;border:7px solid #092f34;border-radius:32px;background:#edf6f9;box-shadow:0 25px 45px -24px rgba(0,38,43,.55);transform:rotate(-5deg);transition:transform .7s cubic-bezier(.2,.8,.2,1)}.feature-story:hover .story-phone{transform:rotate(0) translateY(-7px)}.story-phone-head{display:flex;justify-content:space-between;align-items:center;font-size:.7rem;color:var(--ink-2);margin-bottom:12px}.story-phone-hero{padding:14px;border-radius:17px;background:linear-gradient(135deg,var(--accent),var(--accent-dark));color:#fff;margin-bottom:11px}.story-phone-hero b{font-size:1rem;display:block}.story-phone-hero small{color:rgba(255,255,255,.8)}.story-task{display:flex;align-items:center;gap:8px;padding:10px;margin-top:7px;border-radius:13px;background:#fff;border:1px solid var(--divider);font-size:.67rem}.story-task i{width:21px;height:21px;flex:none;border:1.5px solid var(--accent-light);border-radius:50%;display:grid;place-items:center;color:white;font-style:normal}.story-task.done i{background:var(--success);border-color:var(--success)}.story-task span{flex:1}.story-task small{color:var(--ink-3);font-size:.58rem}.habit-dial{width:145px;height:145px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(#fff 0 72%,rgba(255,255,255,.18) 72% 100%);box-shadow:0 18px 40px -22px rgba(0,0,0,.4);position:relative}.habit-dial:before{content:"";position:absolute;inset:10px;border-radius:50%;background:linear-gradient(145deg,#087e83,#00515a)}.habit-dial strong{position:relative;color:white;font-size:1.65rem}.habit-bubbles{display:flex;gap:8px;margin-top:16px}.habit-bubbles span{width:36px;height:36px;border-radius:12px;background:rgba(255,255,255,.18);display:grid;place-items:center;color:#fff;font-size:.75rem}
+.promise-section{display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:center;padding:clamp(24px,4vw,42px);border-radius:30px;background:#e5f0f2}.promise-quote{padding:22px;border-radius:22px;background:#fff;box-shadow:0 12px 28px -20px rgba(0,81,90,.35);font-size:1.1rem;font-weight:700;line-height:1.8}.promise-quote small{display:block;color:var(--accent);font-size:.72rem;margin-top:10px}.privacy-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.privacy-item{text-align:center;padding:20px 14px;border-radius:20px;background:rgba(255,255,255,.75);border:1px solid var(--divider)}.privacy-item b{display:block;margin:8px 0 4px;font-size:.9rem}.privacy-item p{font-size:.75rem;color:var(--ink-2)}.final-cta{padding:clamp(32px,6vw,64px);text-align:center;border-radius:34px;color:#fff;background:radial-gradient(circle at 15% 0,rgba(131,197,190,.18),transparent 35%),linear-gradient(145deg,#006d77,#003f46);box-shadow:0 22px 50px -28px rgba(0,81,90,.65)}.final-cta h2{font-size:clamp(1.7rem,4vw,2.6rem);margin:10px 0}.final-cta p{color:rgba(255,255,255,.78);max-width:38em;margin:0 auto 22px}.final-cta .btn{background:#fff;color:var(--accent);box-shadow:0 12px 24px -12px rgba(0,0,0,.4)}
+@media(max-width:760px){.value-strip{gap:4px;padding:14px 8px}.value-item{padding:6px 2px}.value-item span{font-size:.67rem}.feature-story,.promise-section{grid-template-columns:1fr}.story-visual{min-height:235px}.privacy-row{grid-template-columns:1fr}.feature-story{padding:24px}.feature-story p{font-size:.9rem}}@media(prefers-reduced-motion:reduce){.story-phone,.feature-story:hover .story-phone{transition:none;transform:none}}
 
 </style>
 </head>
@@ -1884,37 +1849,12 @@
 
 
     <section class="value-strip reveal" aria-label="ملخص تجربة مسار">
-      <div class="value-item"><b>مكان واحد</b><span>لمهامك وعاداتك ودراستك</span></div>
-      <div class="value-item"><b>تقدم واضح</b><span>تابع اللي أنجزته واللي باقي</span></div>
-      <div class="value-item"><b>على جهازك</b><span>بياناتك محفوظة محليًا</span></div>
+      <div class="value-item"><b>مكان واحد</b><span>لمهامك وعاداتك ودراستك</span></div><div class="value-item"><b>تقدم واضح</b><span>تابع اللي أنجزته واللي باقي</span></div><div class="value-item"><b>على جهازك</b><span>بياناتك محفوظة محليًا</span></div>
     </section>
-    <section class="feature-story">
-      <div>
-        <span class="story-tag">إدارة يومك</span>
-        <h2>خلّي كل مهمة ليها وقتها</h2>
-        <p>نظّم يومك من غير ما تفضل شايل كل حاجة في دماغك. أضف المهمة وحدد وقت بدايتها وموعدها النهائي، وسيب مسار يفكّرك في الوقت المناسب.</p>
-        <ul><li>تابع مهام النهارده والمهام القادمة والمتأخرة.</li><li>سجّل إنجازك وتابع تقدم يومك.</li><li>تفاعل مع التذكير مباشرة من الإشعار.</li></ul>
-      </div>
-      <div class="story-visual"><div class="story-phone">
-        <div class="story-phone-head"><b>اليوم</b><span>صباح الخير</span></div>
-        <div class="story-phone-hero"><b>إنجاز يومك</b><small>خلصت 2 من 3 مهام</small><div class="mini-progress"><i style="width:67%;background:#fff"></i></div></div>
-        <div class="story-task done"><i>✓</i><span>مراجعة الدرس</span><small>8:30 ص</small></div>
-        <div class="story-task done"><i>✓</i><span>حل الواجب</span><small>10:00 ص</small></div>
-        <div class="story-task"><i></i><span>قراءة 20 دقيقة</span><small>6:00 م</small></div>
-      </div></div>
+    <section class="feature-story"><div><span class="story-tag">إدارة يومك</span><h2>خلّي كل مهمة ليها وقتها</h2><p>نظّم يومك من غير ما تفضل شايل كل حاجة في دماغك. أضف المهمة وحدد وقت بدايتها وموعدها النهائي، وسيب مسار يفكّرك في الوقت المناسب.</p><ul><li>تابع مهام النهارده والمهام القادمة والمتأخرة.</li><li>سجّل إنجازك وتابع تقدم يومك.</li><li>تفاعل مع التذكير مباشرة من الإشعار.</li></ul></div>
+      <div class="story-visual"><div class="story-phone"><div class="story-phone-head"><b>اليوم</b><span>صباح الخير</span></div><div class="story-phone-hero"><b>إنجاز يومك</b><small>خلصت 2 من 3 مهام</small><div class="mini-progress"><i style="width:67%;background:#fff"></i></div></div><div class="story-task done"><i>✓</i><span>مراجعة الدرس</span><small>8:30 ص</small></div><div class="story-task done"><i>✓</i><span>حل الواجب</span><small>10:00 ص</small></div><div class="story-task"><i></i><span>قراءة 20 دقيقة</span><small>6:00 م</small></div></div></div>
     </section>
-    <section class="feature-story reverse">
-      <div>
-        <span class="story-tag">بناء العادات</span>
-        <h2>الاستمرارية تبدأ بخطوة</h2>
-        <p>حوّل الحاجات اللي نفسك تلتزم بيها لعادات يومية واضحة، وسجّل إنجازك وشوف سلسلة التزامك بتكبر يوم بعد يوم.</p>
-        <ul><li>تابع إنجاز كل عادة وسلسلة الاستمرار.</li><li>اعرف أطول سلسلة وصلت لها.</li><li>حدد تذكير مناسب لكل عادة.</li></ul>
-      </div>
-      <div class="story-visual"><div style="display:grid;justify-items:center">
-        <div class="habit-dial"><strong>72%</strong></div>
-        <div class="habit-bubbles"><span>✓</span><span>✓</span><span>✓</span><span>•</span><span>✓</span></div>
-      </div></div>
-    </section>
+    <section class="feature-story reverse"><div><span class="story-tag">بناء العادات</span><h2>الاستمرارية تبدأ بخطوة</h2><p>حوّل الحاجات اللي نفسك تلتزم بيها لعادات يومية واضحة، وسجّل إنجازك وشوف سلسلة التزامك بتكبر يوم بعد يوم.</p><ul><li>تابع إنجاز كل عادة وسلسلة الاستمرار.</li><li>اعرف أطول سلسلة وصلت لها.</li><li>حدد تذكير مناسب لكل عادة.</li></ul></div><div class="story-visual"><div style="display:grid;justify-items:center"><div class="habit-dial"><strong>72%</strong></div><div class="habit-bubbles"><span>✓</span><span>✓</span><span>✓</span><span>•</span><span>✓</span></div></div></div></section>
 
     
 
@@ -2016,7 +1956,117 @@
       </div>
     </section>
 
-    <section>
+    
+    <section class="promise-section"><div class="sec-head"><span class="study-kicker">فكرة مسار</span><h2>مسار مش بس بينظّم يومك… بيفكّرك إنت بتسعى ليه.</h2><p>اتعمل عشان يساعدك توازن بين مسؤولياتك والحاجات اللي نفسك تعملها، وتبقى شايف تقدمك خطوة بخطوة من غير تعقيد.</p></div><div class="promise-quote">«مش لازم تخلص كل حاجة مرة واحدة… المهم تفضل ماشي في طريقك.»<small>مسار — خطوة بخطوة</small></div></section>
+    <section><div class="sec-head"><h2>بياناتك مكانها جهازك</h2><p>تجربة بسيطة ومباشرة، من غير حسابات أو اعتماد على سيرفر خارجي.</p></div><div class="privacy-row"><article class="privacy-item"><span class="gicon">⌂</span><b>تخزين محلي</b><p>بياناتك محفوظة على جهازك.</p></article><article class="privacy-item"><span class="gicon">◈</span><b>من غير حساب</b><p>ابدأ استخدام مسار من غير تسجيل دخول.</p></article><article class="privacy-item"><span class="gicon">↗</span><b>متاح أوفلاين</b><p>استخدم الأدوات الأساسية من غير إنترنت.</p></article></div></section>
+
+<section class="new">
+      <div class="sec-head">
+        <span class="ver">v1.1.0</span>
+        <h2>أبرز المميزات والتحديثات</h2>
+        <p>كل الأدوات اللي تساعدك تنظم يومك، تتابع تقدمك، وتحافظ على استمراريتك — في تجربة واحدة.</p>
+      </div>
+      <div class="new-grid">
+        <article class="new-item">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8L12 3Z" />
+              <path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15Z" />
+            </svg></div>
+          <div>
+            <h3>تصميم وحركة جديدين</h3>
+            <p>واجهة جديدة بألوان هادية وانتقالات سلسة في كل الشاشات، من اليوم لحد الملاحظات.</p>
+          </div>
+        </article>
+        <article class="new-item">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M6 17V11a6 6 0 0 1 12 0v6l1.5 2h-15L6 17Z" />
+              <path d="M10 21a2 2 0 0 0 4 0" />
+            </svg></div>
+          <div>
+            <h3>تذكيرات بأزرار سريعة</h3>
+            <p>رد على التذكير من الإشعار نفسه: خلصت المهمة، أو ذكّرني بعد 5 دقايق. وكمان تنبيه بوقت البداية.</p>
+          </div>
+        </article>
+        <article class="new-item">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="13" r="7" />
+              <path d="M12 9.5V13l2.5 1.5" />
+              <path d="M9 3h6" />
+            </svg></div>
+          <div>
+            <h3>تنبيه لكل عادة</h3>
+            <p>حدد ميعاد ثابت لكل عادة. افتح شاشة منبه مخصصة لتسجيل الإنجاز أو أجّل التذكير 5 دقايق، وتقدر كمان تتفاعل من الإشعار.</p>
+          </div>
+        </article>
+        <article class="new-item">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="11" cy="11" r="6.5" />
+              <path d="m16 16 4.5 4.5" />
+            </svg></div>
+          <div>
+            <h3>بحث في المواد</h3>
+            <p>دوّر على أي مادة باسمها أو وصفها أو اسم المدرس، والنتيجة تظهر وانت بتكتب.</p>
+          </div>
+        </article>
+        <article class="new-item">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 3v12" />
+              <path d="m8 7 4-4 4 4" />
+              <path d="M5 13v6a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-6" />
+            </svg></div>
+          <div>
+            <h3>مشاركة الملاحظات</h3>
+            <p>ابعت أي ملاحظة أو رسالة تحفيزية لزمايلك بضغطة واحدة من قائمة المشاركة.</p>
+          </div>
+        </article>
+        <article class="new-item">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M4 5h16v11H9l-5 4V5Z" />
+              <path d="M8.5 9.5h7" />
+              <path d="M8.5 12.5h4" />
+            </svg></div>
+          <div>
+            <h3>رسائل مسار التحفيزية</h3>
+            <p>فعّلها من الإعدادات، وهتوصلك رسالة خفيفة خلال اليوم تشجعك تكمّل.</p>
+          </div>
+        </article>
+        <article class="new-item">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M4 5h16M4 12h16M4 19h16" />
+              <circle cx="8" cy="5" r="2" fill="currentColor" />
+              <circle cx="15" cy="12" r="2" fill="currentColor" />
+              <circle cx="10" cy="19" r="2" fill="currentColor" />
+            </svg></div>
+          <div>
+            <h3>فلاتر لتنظيم المهام</h3>
+            <p>اعرض كل المهام، أو مهام النهارده، أو المتأخرة، أو القادمة — واعرف اللي محتاج تركيزك بسرعة.</p>
+          </div>
+        </article>
+        <article class="new-item">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 3v4M12 17v4M3 12h4m10 0h4" />
+              <path d="m7 7 2.5 2.5m5 5L17 17m0-10-2.5 2.5m-5 5L7 17" />
+              <circle cx="12" cy="12" r="4" />
+            </svg></div>
+          <div>
+            <h3>حماية استمرارية العادات</h3>
+            <p>لو فاتك يوم، عندك 3 فرص حماية لكل عادة خلال الشهر تساعدك تحافظ على الستريك لما ترجع تلتزم.</p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+<section class="final-cta"><span class="study-kicker" style="color:#a8d8d3">ابدأ من النهارده</span><h2>ابدأ طريقك مع مسار.</h2><p>نزّل التطبيق، رتّب أولوياتك، وابدأ بخطوة صغيرة تقرّبك من اللي نفسك توصله.</p><a class="btn" href="masar.apk" download="masar.apk">حمّل مسار مجانًا ↓</a></section>
+
+<section>
       <div class="sec-head">
         <h2>التثبيت في أربع خطوات</h2>
         <p>التطبيق بيتثبت من ملف APK مباشرة، من غير Google Play. لو عندك نسخة قديمة، ثبّت الجديدة فوقها وبياناتك هتفضل زي ما هي.</p>
@@ -2268,134 +2318,4 @@
   </script>
 </body>
 
-</html
-    <section class="promise-section">
-      <div class="sec-head">
-        <span class="study-kicker">فكرة مسار</span>
-        <h2>مسار مش بس بينظّم يومك… بيفكّرك إنت بتسعى ليه.</h2>
-        <p>اتعمل عشان يساعدك توازن بين مسؤولياتك والحاجات اللي نفسك تعملها، وتبقى شايف تقدمك خطوة بخطوة من غير تعقيد.</p>
-      </div>
-      <div class="promise-quote">«مش لازم تخلص كل حاجة مرة واحدة… المهم تفضل ماشي في طريقك.»<small>مسار — خطوة بخطوة</small></div>
-    </section>
-    <section>
-      <div class="sec-head"><h2>بياناتك مكانها جهازك</h2><p>تجربة بسيطة ومباشرة، من غير حسابات أو اعتماد على سيرفر خارجي.</p></div>
-      <div class="privacy-row">
-        <article class="privacy-item"><span class="gicon">⌂</span><b>تخزين محلي</b><p>بياناتك محفوظة على جهازك.</p></article>
-        <article class="privacy-item"><span class="gicon">◈</span><b>من غير حساب</b><p>ابدأ استخدام مسار من غير تسجيل دخول.</p></article>
-        <article class="privacy-item"><span class="gicon">↗</span><b>متاح أوفلاين</b><p>استخدم الأدوات الأساسية من غير إنترنت.</p></article>
-      </div>
-    </section>
-
-<section class="new">
-      <div class="sec-head">
-        <span class="ver">v1.1.0</span>
-        <h2>أبرز المميزات والتحديثات</h2>
-        <p>كل الأدوات اللي تساعدك تنظم يومك، تتابع تقدمك، وتحافظ على استمراريتك — في تجربة واحدة.</p>
-      </div>
-      <div class="new-grid">
-        <article class="new-item">
-          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8L12 3Z" />
-              <path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15Z" />
-            </svg></div>
-          <div>
-            <h3>تصميم وحركة جديدين</h3>
-            <p>واجهة جديدة بألوان هادية وانتقالات سلسة في كل الشاشات، من اليوم لحد الملاحظات.</p>
-          </div>
-        </article>
-        <article class="new-item">
-          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M6 17V11a6 6 0 0 1 12 0v6l1.5 2h-15L6 17Z" />
-              <path d="M10 21a2 2 0 0 0 4 0" />
-            </svg></div>
-          <div>
-            <h3>تذكيرات بأزرار سريعة</h3>
-            <p>رد على التذكير من الإشعار نفسه: خلصت المهمة، أو ذكّرني بعد 5 دقايق. وكمان تنبيه بوقت البداية.</p>
-          </div>
-        </article>
-        <article class="new-item">
-          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <circle cx="12" cy="13" r="7" />
-              <path d="M12 9.5V13l2.5 1.5" />
-              <path d="M9 3h6" />
-            </svg></div>
-          <div>
-            <h3>تنبيه لكل عادة</h3>
-            <p>حدد ميعاد ثابت لكل عادة. افتح شاشة منبه مخصصة لتسجيل الإنجاز أو أجّل التذكير 5 دقايق، وتقدر كمان تتفاعل من الإشعار.</p>
-          </div>
-        </article>
-        <article class="new-item">
-          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <circle cx="11" cy="11" r="6.5" />
-              <path d="m16 16 4.5 4.5" />
-            </svg></div>
-          <div>
-            <h3>بحث في المواد</h3>
-            <p>دوّر على أي مادة باسمها أو وصفها أو اسم المدرس، والنتيجة تظهر وانت بتكتب.</p>
-          </div>
-        </article>
-        <article class="new-item">
-          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M12 3v12" />
-              <path d="m8 7 4-4 4 4" />
-              <path d="M5 13v6a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-6" />
-            </svg></div>
-          <div>
-            <h3>مشاركة الملاحظات</h3>
-            <p>ابعت أي ملاحظة أو رسالة تحفيزية لزمايلك بضغطة واحدة من قائمة المشاركة.</p>
-          </div>
-        </article>
-        <article class="new-item">
-          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M4 5h16v11H9l-5 4V5Z" />
-              <path d="M8.5 9.5h7" />
-              <path d="M8.5 12.5h4" />
-            </svg></div>
-          <div>
-            <h3>رسائل مسار التحفيزية</h3>
-            <p>فعّلها من الإعدادات، وهتوصلك رسالة خفيفة خلال اليوم تشجعك تكمّل.</p>
-          </div>
-        </article>
-        <article class="new-item">
-          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M4 5h16M4 12h16M4 19h16" />
-              <circle cx="8" cy="5" r="2" fill="currentColor" />
-              <circle cx="15" cy="12" r="2" fill="currentColor" />
-              <circle cx="10" cy="19" r="2" fill="currentColor" />
-            </svg></div>
-          <div>
-            <h3>فلاتر لتنظيم المهام</h3>
-            <p>اعرض كل المهام، أو مهام النهارده، أو المتأخرة، أو القادمة — واعرف اللي محتاج تركيزك بسرعة.</p>
-          </div>
-        </article>
-        <article class="new-item">
-          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M12 3v4M12 17v4M3 12h4m10 0h4" />
-              <path d="m7 7 2.5 2.5m5 5L17 17m0-10-2.5 2.5m-5 5L7 17" />
-              <circle cx="12" cy="12" r="4" />
-            </svg></div>
-          <div>
-            <h3>حماية استمرارية العادات</h3>
-            <p>لو فاتك يوم، عندك 3 فرص حماية لكل عادة خلال الشهر تساعدك تحافظ على الستريك لما ترجع تلتزم.</p>
-          </div>
-        </article>
-      </div>
-    </section>
-
-
-    <section class="final-cta">
-      <span class="study-kicker" style="color:#a8d8d3">ابدأ من النهارده</span>
-      <h2>ابدأ طريقك مع مسار.</h2>
-      <p>نزّل التطبيق، رتّب أولوياتك، وابدأ بخطوة صغيرة تقرّبك من اللي نفسك توصله.</p>
-      <a class="btn" href="masar.apk" download="masar.apk">حمّل مسار مجانًا ↓</a>
-    </section>
-
->
+</html>
