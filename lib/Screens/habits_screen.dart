@@ -1,10 +1,8 @@
-
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:masar/components/empty_state.dart';
 import 'package:masar/components/habit_tile.dart';
-import 'package:masar/components/motion.dart';
+import 'package:masar/components/ocean_kit.dart';
 import 'package:masar/providers/habits_provider.dart';
 import 'package:masar/theme/AppColors.dart';
 import 'package:provider/provider.dart';
@@ -27,7 +25,20 @@ class HabitsScreen extends StatefulWidget {
   State<HabitsScreen> createState() => _HabitsScreenState();
 }
 
-class _HabitsScreenState extends State<HabitsScreen> {
+class _HabitsScreenState extends State<HabitsScreen>
+    with TickerProviderStateMixin {
+  /// حركة الموج (دورة كل 9 ثواني).
+  late final AnimationController _ambient = AnimationController(
+    vsync: this,
+    duration: const Duration(seconds: 9),
+  )..repeat();
+
+  /// نبض الشعلة.
+  late final AnimationController _pulse = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1400),
+  )..repeat(reverse: true);
+
   @override
   void initState() {
     super.initState();
@@ -39,8 +50,15 @@ class _HabitsScreenState extends State<HabitsScreen> {
     });
   }
 
+  @override
+  void dispose() {
+    _ambient.dispose();
+    _pulse.dispose();
+    super.dispose();
+  }
+
   // ---------------------------------------------------------------
-  // Summary Card
+  // Summary Card — مية بموج مستواها نسبة التزامك النهاردة
   // ---------------------------------------------------------------
 
   Widget _summaryCard({
@@ -51,210 +69,299 @@ class _HabitsScreenState extends State<HabitsScreen> {
     final progress = total == 0 ? 0.0 : done / total;
     final percentage = (progress * 100).round();
     final allDone = total > 0 && done == total;
+    final glow = allDone ? AppColors.success : AppColors.accent;
 
-    return FadeSlideIn(
+    return Reveal(
       index: 1,
+      dy: 24,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(20, 22, 20, 18),
-        child: Container(
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 600),
           width: double.infinity,
-          padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              begin: Alignment.topRight,
-              end: Alignment.bottomLeft,
-              colors: [
-                AppColors.accent,
-                AppColors.accentDark,
-              ],
-            ),
-            borderRadius: BorderRadius.circular(28),
+            borderRadius: BorderRadius.circular(30),
             boxShadow: [
               BoxShadow(
-                color: AppColors.accent.withValues(alpha: 0.3),
-                blurRadius: 26,
-                offset: const Offset(0, 12),
+                color: glow.withValues(alpha: 0.3),
+                blurRadius: 28,
+                offset: const Offset(0, 13),
               ),
             ],
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          allDone
-                              ? "عاش! كملت عاداتك"
-                              : "التزامك النهاردة",
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 19,
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          allDone
-                              ? "أنجزت كل عاداتك النهاردة"
-                              : "كل خطوة صغيرة بتفرق معاك",
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.82),
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(width: 10),
-
-                  // Best streak
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 9,
-                    ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(30),
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 600),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.16),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.12),
+                      gradient: LinearGradient(
+                        begin: Alignment.topRight,
+                        end: Alignment.bottomLeft,
+                        colors: allDone
+                            ? const [
+                          Color(0xFF2F6F5E),
+                          AppColors.success,
+                          Color(0xFF5FA58C),
+                        ]
+                            : const [
+                          AppColors.accentDark,
+                          AppColors.accent,
+                          Color(0xFF187F83),
+                        ],
                       ),
                     ),
-                    child: Column(
-                      children: [
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(
-                              Icons.local_fire_department_rounded,
-                              color: Color(0xFFFFC857),
-                              size: 21,
+                  ),
+                ),
+                // المية
+                Positioned.fill(
+                  child: IgnorePointer(
+                    child: TweenAnimationBuilder<double>(
+                      tween: Tween<double>(begin: 0, end: progress),
+                      duration: const Duration(milliseconds: 1600),
+                      curve: Curves.easeOutCubic,
+                      builder: (context, v, _) => AnimatedBuilder(
+                        animation: _ambient,
+                        builder: (context, _) => CustomPaint(
+                          painter: WavePainter(
+                            level: 0.05 + 0.9 * v,
+                            phase: _ambient.value * 3,
+                            color: Colors.white.withValues(alpha: 0.14),
+                            amplitude: 7,
+                            layers: 3,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                PositionedDirectional(
+                  end: -30,
+                  top: -40,
+                  child: IgnorePointer(
+                    child: Container(
+                      width: 140,
+                      height: 140,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withValues(alpha: 0.07),
+                      ),
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Header
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                AnimatedSwitcher(
+                                  duration: const Duration(milliseconds: 300),
+                                  child: Text(
+                                    allDone
+                                        ? "عاش! كملت عاداتك"
+                                        : "التزامك النهاردة",
+                                    key: ValueKey(allDone),
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 19,
+                                      fontWeight: FontWeight.w900,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  allDone
+                                      ? "أنجزت كل عاداتك النهاردة"
+                                      : "كل خطوة صغيرة بتفرق معاك",
+                                  style: TextStyle(
+                                    color: Colors.white.withValues(alpha: 0.85),
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
                             ),
-                            const SizedBox(width: 4),
-                            AnimatedCount(
-                              value: bestStreak,
+                          ),
+                          const SizedBox(width: 10),
+
+                          // Best streak — الشعلة بتنبض
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 9,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.16),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: Colors.white.withValues(alpha: 0.12),
+                              ),
+                            ),
+                            child: Column(
+                              children: [
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    AnimatedBuilder(
+                                      animation: _pulse,
+                                      builder: (context, child) {
+                                        final p = Curves.easeInOut
+                                            .transform(_pulse.value);
+                                        return Transform.rotate(
+                                          angle: (p - 0.5) * 0.18,
+                                          child: Transform.scale(
+                                            scale: 1 + 0.14 * p,
+                                            child: child,
+                                          ),
+                                        );
+                                      },
+                                      child: const Icon(
+                                        Icons.local_fire_department_rounded,
+                                        color: Color(0xFFFFC857),
+                                        size: 22,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    TweenAnimationBuilder<double>(
+                                      tween: Tween<double>(
+                                        begin: 0,
+                                        end: bestStreak.toDouble(),
+                                      ),
+                                      duration:
+                                      const Duration(milliseconds: 1000),
+                                      curve: Curves.easeOutCubic,
+                                      builder: (context, v, _) => Text(
+                                        '${v.round()}',
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w900,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  "أطول سلسلة",
+                                  style: TextStyle(
+                                    color: Colors.white.withValues(alpha: 0.85),
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      // Progress information
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          const Text(
+                            "إنجاز اليوم",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          const Spacer(),
+                          Text(
+                            "$done",
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 23,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                          Text(
+                            " / $total",
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.75),
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 9,
+                              vertical: 5,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.17),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text(
+                              "$percentage%",
                               style: const TextStyle(
                                 color: Colors.white,
-                                fontSize: 18,
+                                fontSize: 12,
                                 fontWeight: FontWeight.w900,
                               ),
                             ),
-                          ],
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          "أطول سلسلة",
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.85),
-                            fontSize: 10,
-                            fontWeight: FontWeight.w600,
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 24),
-
-              // Progress information
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  const Text(
-                    "إنجاز اليوم",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const Spacer(),
-                  Text(
-                    "$done",
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 23,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                  Text(
-                    " / $total",
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.75),
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 9,
-                      vertical: 5,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.17),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Text(
-                      "$percentage%",
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w900,
+                        ],
                       ),
-                    ),
-                  ),
-                ],
-              ),
 
-              const SizedBox(height: 11),
+                      const SizedBox(height: 11),
 
-              // Animated progress bar
-              TweenAnimationBuilder<double>(
-                tween: Tween(begin: 0, end: progress),
-                duration: const Duration(milliseconds: 900),
-                curve: Curves.easeOutCubic,
-                builder: (context, value, _) {
-                  return Stack(
-                    children: [
-                      Container(
-                        height: 11,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.22),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      FractionallySizedBox(
-                        widthFactor: math.max(value, 0.0001),
-                        child: Container(
-                          height: 11,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(10),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.white.withValues(alpha: 0.5),
-                                blurRadius: 10,
+                      // Animated progress bar
+                      TweenAnimationBuilder<double>(
+                        tween: Tween(begin: 0, end: progress),
+                        duration: const Duration(milliseconds: 900),
+                        curve: Curves.easeOutCubic,
+                        builder: (context, value, _) {
+                          return Stack(
+                            children: [
+                              Container(
+                                height: 11,
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.22),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              FractionallySizedBox(
+                                widthFactor: math.max(value, 0.0001),
+                                child: Container(
+                                  height: 11,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(10),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color:
+                                        Colors.white.withValues(alpha: 0.5),
+                                        blurRadius: 10,
+                                      ),
+                                    ],
+                                  ),
+                                ),
                               ),
                             ],
-                          ),
-                        ),
+                          );
+                        },
                       ),
                     ],
-                  );
-                },
-              ),
-            ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -266,47 +373,55 @@ class _HabitsScreenState extends State<HabitsScreen> {
   // ---------------------------------------------------------------
 
   Widget _habitsSectionHeader(int count) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 4, 24, 12),
-      child: Row(
-        children: [
-          Container(
-            width: 4,
-            height: 21,
-            decoration: BoxDecoration(
-              color: AppColors.accent,
-              borderRadius: BorderRadius.circular(10),
-            ),
-          ),
-          const SizedBox(width: 9),
-          const Text(
-            "عاداتك اليومية",
-            style: TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 17,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-          const Spacer(),
-          Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 11,
-              vertical: 5,
-            ),
-            decoration: BoxDecoration(
-              color: AppColors.accent.withValues(alpha: 0.09),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Text(
-              "$count عادة",
-              style: const TextStyle(
-                color: AppColors.accent,
-                fontSize: 12,
-                fontWeight: FontWeight.w800,
+    return Reveal(
+      index: 2,
+      dy: 16,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(24, 4, 24, 12),
+        child: Row(
+          children: [
+            Container(
+              width: 4,
+              height: 21,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [AppColors.accent, AppColors.secondary],
+                ),
+                borderRadius: BorderRadius.circular(10),
               ),
             ),
-          ),
-        ],
+            const SizedBox(width: 9),
+            const Text(
+              "عاداتك اليومية",
+              style: TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 17,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+            const Spacer(),
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 11,
+                vertical: 5,
+              ),
+              decoration: BoxDecoration(
+                color: AppColors.accent.withValues(alpha: 0.09),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                "$count عادة",
+                style: const TextStyle(
+                  color: AppColors.accent,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -350,7 +465,8 @@ class _HabitsScreenState extends State<HabitsScreen> {
                 // Page Header
                 Padding(
                   padding: const EdgeInsets.fromLTRB(24, 22, 24, 0),
-                  child: FadeSlideIn(
+                  child: Reveal(
+                    dy: 20,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -390,7 +506,7 @@ class _HabitsScreenState extends State<HabitsScreen> {
                 // Habits List
                 Expanded(
                   child: habits.isEmpty
-                      ? const EmptyState(
+                      ? const OceanEmpty(
                     icon: Icons.track_changes_rounded,
                     title: "مفيش عادات لسه",
                     subtitle: "ضيف عادة عاوز تلتزم بيها كل يوم",
@@ -399,7 +515,6 @@ class _HabitsScreenState extends State<HabitsScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _habitsSectionHeader(habits.length),
-
                       Expanded(
                         child: ListView.builder(
                           physics: const BouncingScrollPhysics(
@@ -413,16 +528,14 @@ class _HabitsScreenState extends State<HabitsScreen> {
                           itemBuilder: (context, index) {
                             final habit = habits[index];
 
-                            final hasAlarm =
-                                habit.alarmHour != null &&
-                                    habit.alarmMinute != null;
+                            final hasAlarm = habit.alarmHour != null &&
+                                habit.alarmMinute != null;
 
                             return HabitTile(
                               key: ObjectKey(habit),
                               index: index,
                               habitName: habit.habitName,
-                              habitDescription:
-                              habit.habitDescription,
+                              habitDescription: habit.habitDescription,
                               habitComplete: habit.habitCompleted,
                               streakCount: habit.streakCount,
                               protectionRemaining:

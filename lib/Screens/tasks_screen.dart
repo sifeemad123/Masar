@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:masar/components/empty_state.dart';
-import 'package:masar/components/motion.dart';
+import 'package:masar/components/ocean_kit.dart';
 import 'package:masar/components/task_sheets.dart';
 import 'package:masar/components/todo_tile.dart';
 import 'package:masar/models/tasks_model.dart';
@@ -24,11 +23,205 @@ class TasksScreen extends StatefulWidget {
   State<TasksScreen> createState() => _TasksScreenState();
 }
 
-class _TasksScreenState extends State<TasksScreen> {
+class _TasksScreenState extends State<TasksScreen>
+    with SingleTickerProviderStateMixin {
   String selectedFilter = "all";
 
+  /// حركة الموج (دورة كل 9 ثواني).
+  late final AnimationController _ambient = AnimationController(
+    vsync: this,
+    duration: const Duration(seconds: 9),
+  )..repeat();
+
+  @override
+  void dispose() {
+    _ambient.dispose();
+    super.dispose();
+  }
+
   // ---------------------------------------------------------------
-  // Filter bar
+  // Overview card — مية بموج مستواها نسبة إنجاز كل مهامك
+  // ---------------------------------------------------------------
+
+  Widget _chip(IconData icon, String text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.16),
+        borderRadius: BorderRadius.circular(13),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: Colors.white, size: 15),
+          const SizedBox(width: 5),
+          Text(
+            text,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _overviewCard({
+    required int done,
+    required int total,
+    required int overdue,
+  }) {
+    final progress = total == 0 ? 0.0 : done / total;
+    final allDone = total > 0 && done == total;
+    final glow = allDone ? AppColors.success : AppColors.accent;
+
+    return Reveal(
+      index: 1,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 600),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(26),
+            boxShadow: [
+              BoxShadow(
+                color: glow.withValues(alpha: 0.26),
+                blurRadius: 24,
+                offset: const Offset(0, 11),
+              ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(26),
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 600),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topRight,
+                        end: Alignment.bottomLeft,
+                        colors: allDone
+                            ? const [
+                          Color(0xFF2F6F5E),
+                          AppColors.success,
+                          Color(0xFF5FA58C),
+                        ]
+                            : const [
+                          AppColors.accentDark,
+                          AppColors.accent,
+                          Color(0xFF187F83),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned.fill(
+                  child: IgnorePointer(
+                    child: TweenAnimationBuilder<double>(
+                      tween: Tween<double>(begin: 0, end: progress),
+                      duration: const Duration(milliseconds: 1600),
+                      curve: Curves.easeOutCubic,
+                      builder: (context, v, _) => AnimatedBuilder(
+                        animation: _ambient,
+                        builder: (context, _) => CustomPaint(
+                          painter: WavePainter(
+                            level: 0.06 + 0.88 * v,
+                            phase: _ambient.value * 3,
+                            color: Colors.white.withValues(alpha: 0.14),
+                            amplitude: 6,
+                            layers: 3,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                PositionedDirectional(
+                  end: -30,
+                  top: -40,
+                  child: IgnorePointer(
+                    child: Container(
+                      width: 120,
+                      height: 120,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withValues(alpha: 0.07),
+                      ),
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(18),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'نسبة إنجازك الكلية',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            Wrap(
+                              spacing: 7,
+                              runSpacing: 7,
+                              children: [
+                                _chip(
+                                  Icons.check_circle_rounded,
+                                  'خلصت $done',
+                                ),
+                                _chip(
+                                  Icons.pending_rounded,
+                                  'باقي ${total - done}',
+                                ),
+                                if (overdue > 0)
+                                  _chip(
+                                    Icons.warning_amber_rounded,
+                                    'متأخرة $overdue',
+                                  ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      TweenAnimationBuilder<double>(
+                        tween: Tween<double>(begin: 0, end: progress * 100),
+                        duration: const Duration(milliseconds: 1400),
+                        curve: Curves.easeOutCubic,
+                        builder: (context, v, _) => Text(
+                          '${v.round()}%',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 34,
+                            fontWeight: FontWeight.w900,
+                            height: 1,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ---------------------------------------------------------------
+  // Filter bar — مؤشر بينزلق بين الاختيارات
   // ---------------------------------------------------------------
 
   Widget _filterPill({
@@ -39,34 +232,10 @@ class _TasksScreenState extends State<TasksScreen> {
     final selected = selectedFilter == value;
 
     return Expanded(
-      child: Pressable(
-        haptic: true,
+      child: OceanTap(
         pressedScale: 0.94,
         onTap: () => setState(() => selectedFilter = value),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 280),
-          curve: Curves.easeOutCubic,
-          height: 44,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            gradient: selected
-                ? const LinearGradient(
-              begin: Alignment.centerRight,
-              end: Alignment.centerLeft,
-              colors: [AppColors.accent, AppColors.accentDark],
-            )
-                : null,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: selected
-                ? [
-              BoxShadow(
-                color: AppColors.accent.withValues(alpha: 0.28),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
-              ),
-            ]
-                : const [],
-          ),
+        child: Center(
           child: FittedBox(
             fit: BoxFit.scaleDown,
             child: Padding(
@@ -124,6 +293,90 @@ class _TasksScreenState extends State<TasksScreen> {
     );
   }
 
+  Widget _filters({
+    required int todayCount,
+    required int overdueCount,
+    required int futureCount,
+  }) {
+    const values = ["all", "toDay", "overdue", "future"];
+    final idx = values.indexOf(selectedFilter).clamp(0, 3);
+
+    return Reveal(
+      index: 2,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 18, 20, 10),
+        child: Container(
+          padding: const EdgeInsets.all(5),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(21),
+            border: Border.all(color: AppColors.border),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.accent.withValues(alpha: 0.06),
+                blurRadius: 14,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: SizedBox(
+            height: 44,
+            child: Stack(
+              children: [
+                AnimatedAlign(
+                  duration: const Duration(milliseconds: 380),
+                  curve: Curves.easeOutBack,
+                  alignment: AlignmentDirectional(-1 + idx * 2 / 3, 0),
+                  child: FractionallySizedBox(
+                    widthFactor: 1 / 4,
+                    heightFactor: 1,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
+                        gradient: const LinearGradient(
+                          begin: Alignment.centerRight,
+                          end: Alignment.centerLeft,
+                          colors: [AppColors.accent, AppColors.accentDark],
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.accent.withValues(alpha: 0.28),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                Row(
+                  children: [
+                    _filterPill(title: "الكل", value: "all"),
+                    _filterPill(
+                      title: "النهاردة",
+                      value: "toDay",
+                      count: todayCount,
+                    ),
+                    _filterPill(
+                      title: "متأخرة",
+                      value: "overdue",
+                      count: overdueCount,
+                    ),
+                    _filterPill(
+                      title: "الجاية",
+                      value: "future",
+                      count: futureCount,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   // ---------------------------------------------------------------
   // Empty state
   // ---------------------------------------------------------------
@@ -131,25 +384,25 @@ class _TasksScreenState extends State<TasksScreen> {
   Widget _emptyState() {
     switch (selectedFilter) {
       case "toDay":
-        return const EmptyState(
+        return const OceanEmpty(
           icon: Icons.today_rounded,
           title: "مفيش مهام النهاردة",
           subtitle: "يوم هادي.. استمتع بوقتك",
         );
       case "overdue":
-        return const EmptyState(
+        return const OceanEmpty(
           icon: Icons.task_alt_rounded,
           title: "مفيش مهام متأخرة",
           subtitle: "ممتاز! مخلص كل اللي عليك",
         );
       case "future":
-        return const EmptyState(
+        return const OceanEmpty(
           icon: Icons.event_available_rounded,
           title: "مفيش مهام جاية",
           subtitle: "لسه مفيش حاجة في جدولك",
         );
       default:
-        return const EmptyState(
+        return const OceanEmpty(
           icon: Icons.inbox_rounded,
           title: "مفيش مهام لسه",
           subtitle: "ابدأ بإضافة أول مهمة ليك",
@@ -196,6 +449,7 @@ class _TasksScreenState extends State<TasksScreen> {
     }
 
     final remaining = tasks.where((t) => !t.completed).length;
+    final doneCount = tasks.length - remaining;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -221,7 +475,8 @@ class _TasksScreenState extends State<TasksScreen> {
                 // Header
                 Padding(
                   padding: const EdgeInsets.fromLTRB(24, 18, 24, 0),
-                  child: FadeSlideIn(
+                  child: Reveal(
+                    dy: 20,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -252,40 +507,17 @@ class _TasksScreenState extends State<TasksScreen> {
                   ),
                 ),
 
-                // Filters
-                FadeSlideIn(
-                  index: 1,
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
-                    child: Container(
-                      padding: const EdgeInsets.all(5),
-                      decoration: BoxDecoration(
-                        color: AppColors.surface,
-                        borderRadius: BorderRadius.circular(21),
-                        border: Border.all(color: AppColors.border),
-                      ),
-                      child: Row(
-                        children: [
-                          _filterPill(title: "الكل", value: "all"),
-                          _filterPill(
-                            title: "النهاردة",
-                            value: "toDay",
-                            count: todayTasks.length,
-                          ),
-                          _filterPill(
-                            title: "متأخرة",
-                            value: "overdue",
-                            count: overdueTasks.length,
-                          ),
-                          _filterPill(
-                            title: "الجاية",
-                            value: "future",
-                            count: futureTasks.length,
-                          ),
-                        ],
-                      ),
-                    ),
+                if (tasks.isNotEmpty)
+                  _overviewCard(
+                    done: doneCount,
+                    total: tasks.length,
+                    overdue: overdueTasks.length,
                   ),
+
+                _filters(
+                  todayCount: todayTasks.length,
+                  overdueCount: overdueTasks.length,
+                  futureCount: futureTasks.length,
                 ),
 
                 // List

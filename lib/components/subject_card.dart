@@ -3,7 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:masar/Screens/subject_details.dart';
-import 'package:masar/components/motion.dart';
+import 'package:masar/components/ocean_kit.dart';
 import 'package:masar/components/study_kit.dart';
 import 'package:masar/providers/lessons_provider.dart';
 import 'package:masar/theme/AppColors.dart';
@@ -39,6 +39,7 @@ class SubjectCard extends StatefulWidget {
 class _SubjectCardState extends State<SubjectCard>
     with SingleTickerProviderStateMixin {
   late final AnimationController _enter;
+  late final CurvedAnimation _curved;
 
   @override
   void initState() {
@@ -46,6 +47,10 @@ class _SubjectCardState extends State<SubjectCard>
     _enter = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1100),
+    );
+    _curved = CurvedAnimation(
+      parent: _enter,
+      curve: const Interval(0, 0.5, curve: Curves.easeOutCubic),
     );
     Future.delayed(
       Duration(milliseconds: math.min(widget.index, 10) * 80),
@@ -57,6 +62,7 @@ class _SubjectCardState extends State<SubjectCard>
 
   @override
   void dispose() {
+    _curved.dispose();
     _enter.dispose();
     super.dispose();
   }
@@ -64,7 +70,7 @@ class _SubjectCardState extends State<SubjectCard>
   void _openDetails() {
     Navigator.push<void>(
       context,
-      fadeScaleRoute<void>(
+      oceanRoute<void>(
         SubjectDetails(
           subjectName: widget.subjectName,
           subjectDescription: widget.subjectDescription,
@@ -90,7 +96,7 @@ class _SubjectCardState extends State<SubjectCard>
             begin: Alignment.topRight,
             end: Alignment.bottomLeft,
             colors: complete
-                ? const [Color(0xFF3DDC97), AppColors.success]
+                ? const [AppColors.secondaryDark, AppColors.success]
                 : const [AppColors.accent, AppColors.accentDark],
           ),
           borderRadius: BorderRadius.circular(19),
@@ -103,11 +109,56 @@ class _SubjectCardState extends State<SubjectCard>
             ),
           ],
         ),
-        child: Icon(
-          complete ? Icons.workspace_premium_rounded : Icons.menu_book_rounded,
-          color: AppColors.onAccent,
-          size: 29,
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 350),
+          switchInCurve: Curves.easeOutBack,
+          transitionBuilder: (c, a) => ScaleTransition(scale: a, child: c),
+          child: Icon(
+            complete
+                ? Icons.workspace_premium_rounded
+                : Icons.menu_book_rounded,
+            key: ValueKey(complete),
+            color: AppColors.onAccent,
+            size: 29,
+          ),
         ),
+      ),
+    );
+  }
+
+  Widget _pill({
+    required IconData icon,
+    required String text,
+    required Color color,
+    bool neutral = false,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: neutral
+            ? AppColors.surfaceAlt
+            : color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(12),
+        border: neutral ? Border.all(color: AppColors.divider) : null,
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: color),
+          const SizedBox(width: 5),
+          Flexible(
+            child: Text(
+              text,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: color,
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -116,22 +167,42 @@ class _SubjectCardState extends State<SubjectCard>
     required int total,
     required int done,
     required double progress,
-    required Color color,
+    required bool complete,
   }) {
+    final color = complete ? AppColors.success : AppColors.accent;
+
     return Row(
       children: [
         Expanded(
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(10),
-            child: TweenAnimationBuilder<double>(
-              tween: Tween<double>(begin: 0, end: progress),
-              duration: const Duration(milliseconds: 900),
-              curve: Curves.easeOutCubic,
-              builder: (context, v, _) => LinearProgressIndicator(
-                value: v,
-                minHeight: 8,
-                backgroundColor: color.withValues(alpha: 0.12),
-                valueColor: AlwaysStoppedAnimation<Color>(color),
+          child: TweenAnimationBuilder<double>(
+            tween: Tween<double>(begin: 0, end: progress),
+            duration: const Duration(milliseconds: 1000),
+            curve: Curves.easeOutCubic,
+            builder: (context, v, _) => Container(
+              height: 9,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.14),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: FractionallySizedBox(
+                alignment: AlignmentDirectional.centerStart,
+                widthFactor: v.clamp(0.0, 1.0),
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    gradient: LinearGradient(
+                      colors: complete
+                          ? const [AppColors.secondaryDark, AppColors.success]
+                          : const [AppColors.accentLight, AppColors.accent],
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: color.withValues(alpha: 0.35),
+                        blurRadius: 8,
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
           ),
@@ -146,6 +217,27 @@ class _SubjectCardState extends State<SubjectCard>
           ),
         ),
       ],
+    );
+  }
+
+  /// مية بتطلع من تحت الكارت بنسبة التقدم (بتتحرك وهي طالعة وبعدين بتثبت).
+  Widget _water(double progress, Color color) {
+    return Positioned.fill(
+      child: IgnorePointer(
+        child: TweenAnimationBuilder<double>(
+          tween: Tween<double>(begin: 0, end: progress),
+          duration: const Duration(milliseconds: 1400),
+          curve: Curves.easeOutCubic,
+          builder: (context, v, _) => CustomPaint(
+            painter: WavePainter(
+              level: 0.05 + 0.3 * v,
+              phase: v * 2.5,
+              color: color.withValues(alpha: 0.1),
+              amplitude: 4,
+            ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -174,9 +266,9 @@ class _SubjectCardState extends State<SubjectCard>
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
                               colors: [
-                                Colors.white.withValues(alpha: 0),
-                                Colors.white.withValues(alpha: 0.45),
-                                Colors.white.withValues(alpha: 0),
+                                AppColors.accentLight.withValues(alpha: 0),
+                                AppColors.accentLight.withValues(alpha: 0.35),
+                                AppColors.accentLight.withValues(alpha: 0),
                               ],
                             ),
                           ),
@@ -199,13 +291,20 @@ class _SubjectCardState extends State<SubjectCard>
 
   @override
   Widget build(BuildContext context) {
-    final lessons = context
-        .watch<LessonsProvider>()
-        .lessons
-        .where((l) => l.subjectId == widget.subjectId)
-        .toList();
-    final total = lessons.length;
-    final done = lessons.where((l) => l.lessonCompleted).length;
+    // select: الكارت مش بيعمل rebuild إلا لو أرقام مادته هي اللي اتغيرت.
+    final stats = context.select<LessonsProvider, (int, int)>((p) {
+      var t = 0;
+      var d = 0;
+      for (final l in p.lessons) {
+        if (l.subjectId == widget.subjectId) {
+          t++;
+          if (l.lessonCompleted) d++;
+        }
+      }
+      return (t, d);
+    });
+    final total = stats.$1;
+    final done = stats.$2;
     final progress = total == 0 ? 0.0 : done / total;
     final complete = total > 0 && done == total;
 
@@ -224,20 +323,15 @@ class _SubjectCardState extends State<SubjectCard>
       AppColors.surface,
     );
 
-    final curved = CurvedAnimation(
-      parent: _enter,
-      curve: const Interval(0, 0.5, curve: Curves.easeOutCubic),
-    );
-
     return AnimatedBuilder(
-      animation: curved,
+      animation: _curved,
       builder: (context, child) {
-        final v = curved.value;
+        final v = _curved.value;
         return Opacity(
-          opacity: v,
+          opacity: v.clamp(0.0, 1.0),
           child: Transform.translate(
-            offset: Offset(0, 26 * (1 - v)),
-            child: Transform.scale(scale: 0.94 + 0.06 * v, child: child),
+            offset: Offset(0, 30 * (1 - v)),
+            child: Transform.scale(scale: 0.92 + 0.08 * v, child: child),
           ),
         );
       },
@@ -267,16 +361,15 @@ class _SubjectCardState extends State<SubjectCard>
               ),
             ],
           ),
-          child: Pressable(
+          child: OceanTap(
             pressedScale: 0.97,
-            haptic: true,
             onTap: _openDetails,
             child: Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(26),
                 boxShadow: [
                   BoxShadow(
-                    color: stateColor.withValues(alpha: complete ? 0.06 : 0.14),
+                    color: stateColor.withValues(alpha: complete ? 0.08 : 0.15),
                     blurRadius: 24,
                     offset: const Offset(0, 10),
                   ),
@@ -304,6 +397,7 @@ class _SubjectCardState extends State<SubjectCard>
                         ),
                       ),
                     ),
+                    _water(progress, stateColor),
                     PositionedDirectional(
                       end: -35,
                       top: -45,
@@ -359,18 +453,17 @@ class _SubjectCardState extends State<SubjectCard>
                                       spacing: 8,
                                       runSpacing: 6,
                                       children: [
-                                        InfoPill(
+                                        _pill(
                                           icon: Icons.layers_rounded,
                                           text: lessonsCountText(total),
                                           color: AppColors.accent,
                                         ),
                                         if (teacher.isNotEmpty)
-                                          InfoPill(
+                                          _pill(
                                             icon: Icons.person_outline_rounded,
                                             text: teacher,
                                             color: AppColors.textSecondary,
-                                            background: AppColors.overlay,
-                                            borderColor: AppColors.border,
+                                            neutral: true,
                                           ),
                                       ],
                                     ),
@@ -398,7 +491,7 @@ class _SubjectCardState extends State<SubjectCard>
                             total: total,
                             done: done,
                             progress: progress,
-                            color: stateColor,
+                            complete: complete,
                           ),
                         ],
                       ),

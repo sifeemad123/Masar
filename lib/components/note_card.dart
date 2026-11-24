@@ -1,8 +1,6 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
-import 'package:masar/components/motion.dart';
+import 'package:masar/components/ocean_kit.dart';
 import 'package:masar/providers/user_data_provider.dart';
 import 'package:masar/theme/AppColors.dart';
 import 'package:provider/provider.dart';
@@ -23,26 +21,48 @@ Color noteSecondaryColor(Color color) {
 
 /// Opens the system share sheet with the note text.
 Future<void> shareNote(
-    BuildContext context, {
-      required String name,
-      required String description,
-      required String content,
-      bool isSummary = false,
-    }) async {
-  final userName =
-      Provider.of<UserDataProvider>(context, listen: false).userName;
+  BuildContext context, {
+  required String name,
+  required String description,
+  required String content,
+  bool isSummary = false,
+}) async {
+  final userName = Provider.of<UserDataProvider>(
+    context,
+    listen: false,
+  ).userName;
 
   final text = isSummary
-      ? '📚 ملخص: «$name»\n\n$content\n\nمن $userName\n\nمن تطبيق مسار'
-      : '«$name»\n\n$description\n\n$content\n\nمن $userName\n\nمن تطبيق مسار';
+      ? '''
+📚 $name
+
+$content
+
+━━━━━━━━━━━━━━━━
+✍️ إعداد ومشاركة: $userName
+📱 عبر تطبيق مسار | Masar
+'''
+      : '''
+📝 $name
+
+$description
+
+$content
+
+━━━━━━━━━━━━━━━━
+✍️ إعداد ومشاركة: $userName
+📱 عبر تطبيق مسار | Masar
+'''
+            .trim();
 
   await SharePlus.instance.share(
-    ShareParams(
-      text: text,
-      subject: 'تطبيق مسار',
-    ),
+    ShareParams(text: text, subject: 'تطبيق مسار'),
   );
 }
+
+Color _legible(Color c) => c.computeLuminance() > 0.78
+    ? Color.lerp(c, AppColors.textPrimary, 0.3)!
+    : c;
 
 class NoteCard extends StatefulWidget {
   final String noteName;
@@ -74,28 +94,31 @@ class NoteCard extends StatefulWidget {
 
 class _NoteCardState extends State<NoteCard>
     with SingleTickerProviderStateMixin {
-  late final AnimationController _enter;
+  /// موج هيدر الملخص.
+  late final AnimationController _wave = AnimationController(
+    vsync: this,
+    duration: const Duration(seconds: 7),
+  );
 
   @override
   void initState() {
     super.initState();
+    if (widget.isSummary) _wave.repeat();
+  }
 
-    _enter = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 700),
-    );
-
-    Future.delayed(
-      Duration(milliseconds: math.min(widget.index, 8) * 65),
-          () {
-        if (mounted) _enter.forward();
-      },
-    );
+  @override
+  void didUpdateWidget(covariant NoteCard old) {
+    super.didUpdateWidget(old);
+    if (widget.isSummary && !_wave.isAnimating) {
+      _wave.repeat();
+    } else if (!widget.isSummary && _wave.isAnimating) {
+      _wave.stop();
+    }
   }
 
   @override
   void dispose() {
-    _enter.dispose();
+    _wave.dispose();
     super.dispose();
   }
 
@@ -110,141 +133,264 @@ class _NoteCardState extends State<NoteCard>
   }
 
   // ---------------------------------------------------------------
-  // Summary card (مختلف عن النوت العادية)
+  // Summary card
   // ---------------------------------------------------------------
 
-  Widget _summaryBody() {
+  Widget _summaryBody(BuildContext context) {
     final content = widget.noteContent.trim();
 
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(25),
+        borderRadius: BorderRadius.circular(26),
         border: Border.all(
-          color: AppColors.accent.withValues(alpha: 0.35),
-          width: 1.4,
+          color: AppColors.secondary.withValues(alpha: 0.55),
+          width: 1.2,
         ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.accent.withValues(alpha: 0.14),
-            blurRadius: 22,
-            offset: const Offset(0, 9),
+            color: AppColors.accent.withValues(alpha: 0.12),
+            blurRadius: 25,
+            offset: const Offset(0, 10),
           ),
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(25),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Header
             Container(
-              padding: const EdgeInsets.fromLTRB(16, 12, 12, 12),
+              width: double.infinity,
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
-                  begin: Alignment.centerRight,
-                  end: Alignment.centerLeft,
-                  colors: [AppColors.accent, AppColors.accentDark],
+                  begin: Alignment.topRight,
+                  end: Alignment.bottomLeft,
+                  colors: [
+                    AppColors.accentDark,
+                    AppColors.accent,
+                    Color(0xFF268B8B),
+                  ],
                 ),
               ),
-              child: Row(
+              child: Stack(
                 children: [
-                  const Icon(
-                    Icons.auto_stories_rounded,
-                    color: AppColors.onAccent,
-                    size: 20,
-                  ),
-                  const SizedBox(width: 8),
-                  const Text(
-                    'ملخص الدرس',
-                    style: TextStyle(
-                      color: AppColors.onAccent,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                  const Spacer(),
-                  Material(
-                    color: Colors.white.withValues(alpha: 0.16),
-                    shape: const CircleBorder(),
-                    child: InkWell(
-                      customBorder: const CircleBorder(),
-                      onTap: () => _share(context),
-                      child: const Padding(
-                        padding: EdgeInsets.all(8),
-                        child: Icon(
-                          Icons.ios_share_rounded,
-                          size: 17,
-                          color: AppColors.onAccent,
+                  Positioned.fill(
+                    child: IgnorePointer(
+                      child: AnimatedBuilder(
+                        animation: _wave,
+                        builder: (context, _) => CustomPaint(
+                          painter: WavePainter(
+                            level: 0.3,
+                            phase: _wave.value * 2,
+                            color: Colors.white.withValues(alpha: 0.12),
+                            amplitude: 6,
+                            layers: 3,
+                          ),
                         ),
                       ),
+                    ),
+                  ),
+                  PositionedDirectional(
+                    end: -10,
+                    top: -25,
+                    child: Icon(
+                      Icons.auto_stories_rounded,
+                      size: 125,
+                      color: Colors.white.withValues(alpha: 0.075),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(18),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.16),
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(
+                                  color: Colors.white.withValues(alpha: 0.15),
+                                ),
+                              ),
+                              child: const Icon(
+                                Icons.auto_stories_rounded,
+                                size: 23,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(width: 11),
+                            const Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'STUDY NOTES',
+                                  style: TextStyle(
+                                    color: AppColors.secondaryLight,
+                                    fontSize: 9,
+                                    letterSpacing: 2,
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                                ),
+                                SizedBox(height: 4),
+                                Text(
+                                  'ملخص الدرس',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const Spacer(),
+                            OceanTap(
+                              pressedScale: 0.88,
+                              onTap: () => _share(context),
+                              child: Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Colors.white.withValues(alpha: 0.15),
+                                ),
+                                child: const Icon(
+                                  Icons.ios_share_rounded,
+                                  color: Colors.white,
+                                  size: 18,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 24),
+                        Text(
+                          widget.noteName,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 21,
+                            fontWeight: FontWeight.w900,
+                            height: 1.45,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'مراجعة مركزة لأهم أفكار الدرس',
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.75),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                      ],
                     ),
                   ),
                 ],
               ),
             ),
 
+            // Body
             Padding(
-              padding: const EdgeInsets.fromLTRB(17, 16, 17, 14),
+              padding: const EdgeInsets.fromLTRB(18, 18, 18, 17),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    widget.noteName,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: AppColors.textPrimary,
-                      fontSize: 19,
-                      fontWeight: FontWeight.w900,
-                      height: 1.35,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Container(
-                    width: 44,
-                    height: 3,
-                    decoration: BoxDecoration(
-                      color: AppColors.accent.withValues(alpha: 0.35),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    content.isEmpty ? 'لا يوجد محتوى' : content,
-                    maxLines: 6,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: content.isEmpty
-                          ? AppColors.textMuted
-                          : AppColors.textSecondary,
-                      fontSize: 14,
-                      height: 1.75,
-                    ),
-                  ),
-                  const SizedBox(height: 14),
                   Row(
-                    children: const [
-                      Icon(
-                        Icons.menu_book_rounded,
-                        size: 16,
-                        color: AppColors.accent,
-                      ),
-                      SizedBox(width: 7),
-                      Text(
-                        'اقرأ الملخص كامل',
+                    children: [
+                      const Text(
+                        'محتوى الملخص',
                         style: TextStyle(
-                          color: AppColors.accent,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w800,
+                          color: AppColors.textPrimary,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w900,
                         ),
                       ),
-                      Spacer(),
+                      const Spacer(),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 5,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.secondary.withValues(alpha: 0.18),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: const Row(
+                          children: [
+                            Icon(
+                              Icons.menu_book_rounded,
+                              size: 13,
+                              color: AppColors.accent,
+                            ),
+                            SizedBox(width: 5),
+                            Text(
+                              'للمراجعة',
+                              style: TextStyle(
+                                color: AppColors.accentDark,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 13),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(15),
+                    decoration: BoxDecoration(
+                      color: AppColors.pearl,
+                      borderRadius: BorderRadius.circular(17),
+                      border: Border.all(
+                        color: AppColors.divider.withValues(alpha: 0.8),
+                      ),
+                    ),
+                    child: Text(
+                      content.isEmpty ? 'لا يوجد محتوى للملخص' : content,
+                      maxLines: 5,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: content.isEmpty
+                            ? AppColors.textMuted
+                            : AppColors.textPrimary,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        height: 1.85,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 17),
+                  const Row(
+                    children: [
                       Icon(
-                        Icons.arrow_back_ios_new_rounded,
+                        Icons.auto_awesome_rounded,
+                        color: AppColors.warm,
+                        size: 17,
+                      ),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'راجع أفكارك وثبّت معلوماتك',
+                          style: TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                      Icon(
+                        Icons.arrow_forward_ios_rounded,
                         size: 13,
-                        color: AppColors.textMuted,
+                        color: AppColors.accent,
                       ),
                     ],
                   ),
@@ -261,70 +407,71 @@ class _NoteCardState extends State<NoteCard>
   // Normal note card
   // ---------------------------------------------------------------
 
-  Widget _noteBody() {
-    final color = widget.noteColor;
-    final isLight = color.computeLuminance() > 0.55;
+  Widget _noteBody(BuildContext context) {
+    final color = _legible(widget.noteColor);
     final description = widget.noteDescription.trim();
     final content = widget.noteContent.trim();
-
-    final foreground = noteTextColor(color);
-    final secondary = noteSecondaryColor(color);
-
-    final surface = Color.lerp(AppColors.surface, color, 0.19)!;
-    final accent = Color.lerp(color, AppColors.accent, 0.12)!;
 
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: surface,
-        borderRadius: BorderRadius.circular(25),
-        border: Border.all(
-          color: color.withValues(alpha: 0.28),
-          width: 1.2,
-        ),
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppColors.divider, width: 1),
         boxShadow: [
           BoxShadow(
-            color: color.withValues(alpha: 0.16),
-            blurRadius: 22,
-            offset: const Offset(0, 9),
-          ),
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.035),
-            blurRadius: 5,
-            offset: const Offset(0, 2),
+            color: AppColors.accent.withValues(alpha: 0.09),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(23),
         child: Stack(
           children: [
+            // Rail
             PositionedDirectional(
-              top: -38,
-              end: -25,
+              top: 0,
+              bottom: 0,
+              start: 0,
               child: Container(
-                width: 125,
-                height: 125,
+                width: 5,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [color, color.withValues(alpha: 0.45)],
+                  ),
+                ),
+              ),
+            ),
+
+            // Decorative background
+            PositionedDirectional(
+              top: -40,
+              end: -35,
+              child: Container(
+                width: 145,
+                height: 145,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: color.withValues(alpha: 0.12),
+                  color: color.withValues(alpha: 0.075),
                 ),
               ),
             ),
             PositionedDirectional(
-              top: 35,
-              end: 45,
-              child: Container(
-                width: 42,
-                height: 42,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: color.withValues(alpha: 0.09),
-                ),
+              top: 20,
+              end: 30,
+              child: Icon(
+                Icons.sticky_note_2_rounded,
+                size: 95,
+                color: color.withValues(alpha: 0.09),
               ),
             ),
+
             Padding(
-              padding: const EdgeInsets.fromLTRB(17, 16, 17, 14),
+              padding: const EdgeInsetsDirectional.fromSTEB(20, 17, 18, 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -336,11 +483,8 @@ class _NoteCardState extends State<NoteCard>
                           vertical: 7,
                         ),
                         decoration: BoxDecoration(
-                          color: color.withValues(alpha: 0.20),
+                          color: color.withValues(alpha: 0.13),
                           borderRadius: BorderRadius.circular(30),
-                          border: Border.all(
-                            color: color.withValues(alpha: 0.18),
-                          ),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
@@ -348,13 +492,13 @@ class _NoteCardState extends State<NoteCard>
                             Icon(
                               Icons.sticky_note_2_rounded,
                               size: 14,
-                              color: foreground,
+                              color: color,
                             ),
                             const SizedBox(width: 6),
-                            Text(
+                            const Text(
                               'ملاحظة',
                               style: TextStyle(
-                                color: foreground,
+                                color: AppColors.textPrimary,
                                 fontSize: 11,
                                 fontWeight: FontWeight.w800,
                               ),
@@ -363,34 +507,34 @@ class _NoteCardState extends State<NoteCard>
                         ),
                       ),
                       const Spacer(),
-                      Material(
-                        color: color.withValues(alpha: 0.13),
-                        shape: const CircleBorder(),
-                        child: InkWell(
-                          customBorder: const CircleBorder(),
-                          onTap: () => _share(context),
-                          child: Padding(
-                            padding: const EdgeInsets.all(9),
-                            child: Icon(
-                              Icons.ios_share_rounded,
-                              size: 18,
-                              color: foreground,
-                            ),
+                      OceanTap(
+                        pressedScale: 0.88,
+                        onTap: () => _share(context),
+                        child: Container(
+                          padding: const EdgeInsets.all(9),
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: AppColors.surfaceAlt,
+                          ),
+                          child: const Icon(
+                            Icons.ios_share_rounded,
+                            size: 17,
+                            color: AppColors.textSecondary,
                           ),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 17),
                   Text(
                     widget.noteName,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: foreground,
-                      fontSize: 20,
+                    style: const TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 19,
                       fontWeight: FontWeight.w900,
-                      height: 1.35,
+                      height: 1.4,
                     ),
                   ),
                   if (description.isNotEmpty) ...[
@@ -399,25 +543,23 @@ class _NoteCardState extends State<NoteCard>
                       description,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: secondary,
+                      style: const TextStyle(
+                        color: AppColors.textSecondary,
                         fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        height: 1.55,
+                        fontWeight: FontWeight.w500,
+                        height: 1.6,
                       ),
                     ),
                   ],
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 18),
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.all(13),
+                    padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
-                      color: isLight
-                          ? Colors.white.withValues(alpha: 0.55)
-                          : Colors.black.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(17),
+                      color: AppColors.pearl,
+                      borderRadius: BorderRadius.circular(16),
                       border: Border.all(
-                        color: foreground.withValues(alpha: 0.08),
+                        color: AppColors.divider.withValues(alpha: 0.8),
                       ),
                     ),
                     child: Column(
@@ -427,68 +569,58 @@ class _NoteCardState extends State<NoteCard>
                           children: [
                             Container(
                               width: 4,
-                              height: 15,
+                              height: 16,
                               decoration: BoxDecoration(
-                                color: accent,
+                                color: color,
                                 borderRadius: BorderRadius.circular(5),
                               ),
                             ),
-                            const SizedBox(width: 7),
-                            Text(
+                            const SizedBox(width: 8),
+                            const Text(
                               'معاينة المحتوى',
                               style: TextStyle(
-                                color: secondary,
+                                color: AppColors.textSecondary,
                                 fontSize: 11,
                                 fontWeight: FontWeight.w800,
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 9),
+                        const SizedBox(height: 10),
                         Text(
                           content.isEmpty ? 'لا يوجد محتوى للمعاينة' : content,
                           maxLines: 4,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
-                            color: content.isEmpty ? secondary : foreground,
+                            color: content.isEmpty
+                                ? AppColors.textMuted
+                                : AppColors.textPrimary,
                             fontSize: 13,
                             fontWeight: FontWeight.w500,
-                            height: 1.7,
+                            height: 1.8,
                           ),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 15),
+                  const SizedBox(height: 16),
                   Row(
                     children: [
-                      Container(
-                        width: 30,
-                        height: 30,
-                        decoration: BoxDecoration(
-                          color: color.withValues(alpha: 0.20),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          Icons.menu_book_rounded,
-                          size: 16,
-                          color: foreground,
-                        ),
-                      ),
-                      const SizedBox(width: 9),
-                      Text(
+                      Icon(Icons.menu_book_rounded, size: 18, color: color),
+                      const SizedBox(width: 8),
+                      const Text(
                         'افتح الملاحظة',
                         style: TextStyle(
-                          color: foreground,
+                          color: AppColors.accent,
                           fontSize: 12,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w900,
                         ),
                       ),
                       const Spacer(),
-                      Icon(
-                        Icons.arrow_back_ios_new_rounded,
+                      const Icon(
+                        Icons.arrow_forward_ios_rounded,
                         size: 13,
-                        color: secondary,
+                        color: AppColors.textMuted,
                       ),
                     ],
                   ),
@@ -507,32 +639,11 @@ class _NoteCardState extends State<NoteCard>
 
   @override
   Widget build(BuildContext context) {
-    final animation = CurvedAnimation(
-      parent: _enter,
-      curve: Curves.easeOutCubic,
-    );
-
-    return AnimatedBuilder(
-      animation: animation,
-      builder: (context, child) {
-        final value = animation.value;
-
-        return Opacity(
-          opacity: value.clamp(0.0, 1.0),
-          child: Transform.translate(
-            offset: Offset(0, 28 * (1 - value)),
-            child: Transform.scale(
-              scale: 0.95 + (0.05 * value),
-              child: child,
-            ),
-          ),
-        );
-      },
+    return Reveal(
+      index: widget.index,
+      dy: 34,
       child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 18,
-          vertical: 8,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
         child: Slidable(
           key: ValueKey(
             'note-${widget.isSummary ? 's' : 'n'}-${widget.index}-${widget.noteName}',
@@ -557,11 +668,12 @@ class _NoteCardState extends State<NoteCard>
               ),
             ],
           ),
-          child: Pressable(
+          child: OceanTap(
             pressedScale: 0.975,
-            haptic: true,
             onTap: widget.onTap,
-            child: widget.isSummary ? _summaryBody() : _noteBody(),
+            child: widget.isSummary
+                ? _summaryBody(context)
+                : _noteBody(context),
           ),
         ),
       ),

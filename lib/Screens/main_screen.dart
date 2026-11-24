@@ -8,6 +8,7 @@ import 'package:masar/Screens/subjects_screen.dart';
 import 'package:masar/Screens/tasks_screen.dart';
 import 'package:masar/components/button.dart';
 import 'package:masar/components/dialogs.dart';
+import 'package:masar/components/ocean_kit.dart';
 import 'package:masar/providers/habits_provider.dart';
 import 'package:masar/providers/subjects_provider.dart';
 import 'package:masar/providers/user_data_provider.dart';
@@ -21,7 +22,8 @@ class MainScreen extends StatefulWidget {
   State<MainScreen> createState() => _MainScreenState();
 }
 
-class _MainScreenState extends State<MainScreen> {
+class _MainScreenState extends State<MainScreen>
+    with SingleTickerProviderStateMixin {
   static const int _settingsIndex = 4;
 
   /// Space reserved at the bottom so the (existing) screens never hide
@@ -32,16 +34,23 @@ class _MainScreenState extends State<MainScreen> {
 
   final PageController pageController = PageController();
 
-  final List<Widget> screens = const [
-    _KeepAlive(child: HomeScreen()),
-    _KeepAlive(child: TasksScreen()),
-    _KeepAlive(child: HabitsScreen()),
-    _KeepAlive(child: SubjectsScreen()),
-    _KeepAlive(child: SettingsScreen()),
+  final List<Widget> _pages = const [
+    HomeScreen(),
+    TasksScreen(),
+    HabitsScreen(),
+    SubjectsScreen(),
+    SettingsScreen(),
   ];
+
+  /// نبض زرار الإضافة.
+  late final AnimationController _pulse = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1800),
+  )..repeat(reverse: true);
 
   @override
   void dispose() {
+    _pulse.dispose();
     pageController.dispose();
     super.dispose();
   }
@@ -131,10 +140,21 @@ class _MainScreenState extends State<MainScreen> {
           width: 48,
           height: 48,
           decoration: BoxDecoration(
-            color: AppColors.surfaceAlt,
+            gradient: const LinearGradient(
+              begin: Alignment.topRight,
+              end: Alignment.bottomLeft,
+              colors: [AppColors.accent, AppColors.accentDark],
+            ),
             borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.accent.withValues(alpha: 0.25),
+                blurRadius: 12,
+                offset: const Offset(0, 5),
+              ),
+            ],
           ),
-          child: Icon(icon, color: AppColors.accent, size: 26),
+          child: Icon(icon, color: AppColors.onAccent, size: 26),
         ),
         const SizedBox(width: 14),
         Expanded(
@@ -147,21 +167,9 @@ class _MainScreenState extends State<MainScreen> {
             ),
           ),
         ),
-        Material(
-          color: AppColors.surfaceAlt,
-          shape: const CircleBorder(),
-          child: InkWell(
-            customBorder: const CircleBorder(),
-            onTap: () => Navigator.pop(sheetContext),
-            child: const Padding(
-              padding: EdgeInsets.all(10),
-              child: Icon(
-                Icons.close_rounded,
-                color: AppColors.textPrimary,
-                size: 22,
-              ),
-            ),
-          ),
+        GlassIconButton(
+          icon: Icons.close_rounded,
+          onTap: () => Navigator.pop(sheetContext),
         ),
       ],
     );
@@ -196,9 +204,16 @@ class _MainScreenState extends State<MainScreen> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      _sheetHeader(sheetContext, title, icon),
+                      Reveal(
+                        dy: -12,
+                        child: _sheetHeader(sheetContext, title, icon),
+                      ),
                       const SizedBox(height: 26),
-                      builder(sheetContext, setSheet),
+                      Reveal(
+                        index: 1,
+                        dy: 18,
+                        child: builder(sheetContext, setSheet),
+                      ),
                     ],
                   ),
                 ),
@@ -216,19 +231,29 @@ class _MainScreenState extends State<MainScreen> {
     required bool active,
     required VoidCallback onTap,
   }) {
-    return InkWell(
+    return OceanTap(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
+      pressedScale: 0.96,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 220),
+        duration: const Duration(milliseconds: 260),
+        curve: Curves.easeOutCubic,
         height: 58,
         decoration: BoxDecoration(
-          color: active ? AppColors.surfaceAlt : AppColors.surface,
+          color: active
+              ? AppColors.accent.withValues(alpha: 0.08)
+              : AppColors.surface,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: active ? AppColors.accent : AppColors.border,
             width: active ? 1.6 : 1,
           ),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.accent.withValues(alpha: active ? 0.12 : 0),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -258,14 +283,30 @@ class _MainScreenState extends State<MainScreen> {
     required bool selected,
     required VoidCallback onTap,
   }) {
-    return GestureDetector(
+    return OceanTap(
       onTap: onTap,
+      pressedScale: 0.93,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 220),
+        duration: const Duration(milliseconds: 260),
+        curve: Curves.easeOutCubic,
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 9),
         decoration: BoxDecoration(
-          color: selected ? AppColors.accent : AppColors.surfaceAlt,
+          gradient: selected
+              ? const LinearGradient(
+            begin: Alignment.topRight,
+            end: Alignment.bottomLeft,
+            colors: [AppColors.accent, AppColors.accentDark],
+          )
+              : null,
+          color: selected ? null : AppColors.surfaceAlt,
           borderRadius: BorderRadius.circular(30),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.accent.withValues(alpha: selected ? 0.25 : 0),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Text(
           text,
@@ -663,20 +704,17 @@ class _MainScreenState extends State<MainScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Align(
-                  alignment: AlignmentDirectional.centerStart,
-                  child: Text(
-                    "عاوز تضيف إيه؟",
-                    style: TextStyle(
-                      color: AppColors.textPrimary,
-                      fontSize: 24,
-                      fontWeight: FontWeight.w800,
-                    ),
+                const Reveal(
+                  dy: -14,
+                  child: _WaveBanner(
+                    title: "عاوز تضيف إيه؟",
+                    subtitle: "اختار وابدأ رحلتك",
+                    icon: Icons.sailing_rounded,
                   ),
                 ),
                 const SizedBox(height: 18),
                 _CreateTile(
-                  index: 0,
+                  index: 1,
                   icon: Icons.task_alt_rounded,
                   title: "مهمة جديدة",
                   subtitle: "بموعد وتذكير",
@@ -686,7 +724,7 @@ class _MainScreenState extends State<MainScreen> {
                   },
                 ),
                 _CreateTile(
-                  index: 1,
+                  index: 2,
                   icon: Icons.water_drop_rounded,
                   title: "عادة جديدة",
                   subtitle: "وابدأ سلسلتك من النهاردة",
@@ -696,7 +734,7 @@ class _MainScreenState extends State<MainScreen> {
                   },
                 ),
                 _CreateTile(
-                  index: 2,
+                  index: 3,
                   icon: Icons.menu_book_rounded,
                   title: "مادة جديدة",
                   subtitle: "بدروسها وملاحظاتها",
@@ -725,35 +763,42 @@ class _MainScreenState extends State<MainScreen> {
       curve: hidden ? Curves.easeInBack : Curves.easeOutBack,
       child: IgnorePointer(
         ignoring: hidden,
-        child: Container(
-          width: 66,
-          height: 66,
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              begin: Alignment.topRight,
-              end: Alignment.bottomLeft,
-              colors: [AppColors.accent, AppColors.accentDark],
-            ),
-            borderRadius: BorderRadius.circular(22),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.accent.withValues(alpha: 0.38),
-                blurRadius: 22,
-                offset: const Offset(0, 10),
-              ),
-            ],
-          ),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              borderRadius: BorderRadius.circular(22),
-              onTap: create,
-              child: const Icon(
-                Icons.add_rounded,
-                color: AppColors.onAccent,
-                size: 34,
-              ),
-            ),
+        child: OceanTap(
+          pressedScale: 0.88,
+          haptic: false,
+          onTap: create,
+          child: AnimatedBuilder(
+            animation: _pulse,
+            builder: (context, _) {
+              final p = Curves.easeInOut.transform(_pulse.value);
+              return Transform.scale(
+                scale: 1 + 0.035 * p,
+                child: Container(
+                  width: 66,
+                  height: 66,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      begin: Alignment.topRight,
+                      end: Alignment.bottomLeft,
+                      colors: [AppColors.accent, AppColors.accentDark],
+                    ),
+                    borderRadius: BorderRadius.circular(22),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.accent.withValues(alpha: 0.3 + 0.16 * p),
+                        blurRadius: 20 + 12 * p,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
+                  ),
+                  child: const Icon(
+                    Icons.add_rounded,
+                    color: AppColors.onAccent,
+                    size: 34,
+                  ),
+                ),
+              );
+            },
           ),
         ),
       ),
@@ -783,7 +828,15 @@ class _MainScreenState extends State<MainScreen> {
               FocusManager.instance.primaryFocus?.unfocus();
               setState(() => currentScreen = index);
             },
-            children: screens,
+            children: [
+              // TickerMode: التابات اللي مش ظاهرة بتوقف أنيميشنها (موج/نبض)
+              // عشان مانستهلكش بطارية على شاشات مش قدام اليوزر.
+              for (var i = 0; i < _pages.length; i++)
+                TickerMode(
+                  enabled: i == currentScreen,
+                  child: _KeepAlive(child: _pages[i]),
+                ),
+            ],
           ),
         ),
         floatingActionButton: _addButton(),
@@ -841,6 +894,147 @@ class _MainScreenState extends State<MainScreen> {
 }
 
 // =========================
+// Banner بموج متحرك فوق شيت "عاوز تضيف إيه؟"
+// =========================
+
+class _WaveBanner extends StatefulWidget {
+  final String title;
+  final String subtitle;
+  final IconData icon;
+
+  const _WaveBanner({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+  });
+
+  @override
+  State<_WaveBanner> createState() => _WaveBannerState();
+}
+
+class _WaveBannerState extends State<_WaveBanner>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _wave = AnimationController(
+    vsync: this,
+    duration: const Duration(seconds: 6),
+  )..repeat();
+
+  @override
+  void dispose() {
+    _wave.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.accent.withValues(alpha: 0.22),
+            blurRadius: 20,
+            offset: const Offset(0, 9),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: DecoratedBox(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topRight,
+                    end: Alignment.bottomLeft,
+                    colors: [
+                      AppColors.accentDark,
+                      AppColors.accent,
+                      Color(0xFF187F83),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            Positioned.fill(
+              child: IgnorePointer(
+                child: AnimatedBuilder(
+                  animation: _wave,
+                  builder: (context, _) => CustomPaint(
+                    painter: WavePainter(
+                      level: 0.32,
+                      phase: _wave.value * 2,
+                      color: Colors.white.withValues(alpha: 0.14),
+                      amplitude: 6,
+                      layers: 3,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            PositionedDirectional(
+              end: -8,
+              top: -20,
+              child: Icon(
+                widget.icon,
+                size: 110,
+                color: Colors.white.withValues(alpha: 0.08),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(18),
+              child: Row(
+                children: [
+                  Container(
+                    width: 50,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.18),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.18),
+                      ),
+                    ),
+                    child: Icon(widget.icon, color: Colors.white, size: 26),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          widget.title,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 22,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          widget.subtitle,
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.8),
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// =========================
 // Option tile in the "add" sheet
 // =========================
 
@@ -861,75 +1055,88 @@ class _CreateTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TweenAnimationBuilder<double>(
-      tween: Tween<double>(begin: 0, end: 1),
-      duration: Duration(milliseconds: 380 + index * 90),
-      curve: Curves.easeOutCubic,
-      builder: (context, value, child) {
-        return Opacity(
-          opacity: value,
-          child: Transform.translate(
-            offset: Offset(0, (1 - value) * 24),
-            child: child,
-          ),
-        );
-      },
+    return Reveal(
+      index: index,
+      dy: 24,
       child: Padding(
         padding: const EdgeInsets.only(bottom: 12),
-        child: Material(
-          color: AppColors.surfaceAlt,
-          borderRadius: BorderRadius.circular(20),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(20),
-            onTap: onTap,
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  Container(
-                    width: 52,
-                    height: 52,
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        begin: Alignment.topRight,
-                        end: Alignment.bottomLeft,
-                        colors: [AppColors.accent, AppColors.accentDark],
+        child: OceanTap(
+          pressedScale: 0.97,
+          onTap: onTap,
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(22),
+              border: Border.all(color: AppColors.divider),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.accent.withValues(alpha: 0.08),
+                  blurRadius: 16,
+                  offset: const Offset(0, 7),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 52,
+                  height: 52,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      begin: Alignment.topRight,
+                      end: Alignment.bottomLeft,
+                      colors: [AppColors.accent, AppColors.accentDark],
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.accent.withValues(alpha: 0.22),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
                       ),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Icon(icon, color: AppColors.onAccent, size: 26),
+                    ],
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          title,
-                          style: const TextStyle(
-                            color: AppColors.textPrimary,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                          ),
+                  child: Icon(icon, color: AppColors.onAccent, size: 26),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
                         ),
-                        const SizedBox(height: 2),
-                        Text(
-                          subtitle,
-                          style: const TextStyle(
-                            color: AppColors.textSecondary,
-                            fontSize: 14,
-                          ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        subtitle,
+                        style: const TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 14,
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                  const Icon(
+                ),
+                Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: AppColors.accent.withValues(alpha: 0.08),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
                     Icons.arrow_forward_ios_rounded,
-                    size: 16,
-                    color: AppColors.textSecondary,
+                    size: 14,
+                    color: AppColors.accent,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),

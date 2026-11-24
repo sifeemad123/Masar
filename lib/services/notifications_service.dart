@@ -1,5 +1,6 @@
 
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -700,12 +701,15 @@ class NotificationsService {
     }
   }
 
+
   Future<void> scheduleMotivationalReminders() async {
     await _ensureInitialized();
 
     const hours = [1, 3, 5, 7, 10, 12, 15, 17, 20, 22, 24];
 
     final now = tz.TZDateTime.now(tz.local);
+
+    final random = Random();
 
     for (int i = 0; i < hours.length; i++) {
       final hour = hours[i];
@@ -722,11 +726,14 @@ class NotificationsService {
         scheduledDate = scheduledDate.add(const Duration(days: 1));
       }
 
+      final randomMessage = _motivationalMessages[
+      random.nextInt(_motivationalMessages.length)
+      ];
+
       await plugin.zonedSchedule(
         id: _motivationOffset + i,
         title: 'رسالة من مسار',
-        body: _motivationalMessages[
-        i % _motivationalMessages.length],
+        body: randomMessage,
         scheduledDate: scheduledDate,
         notificationDetails: const NotificationDetails(
           android: _motivationDetails,
@@ -736,6 +743,7 @@ class NotificationsService {
       );
     }
   }
+
 
   Future<void> cancelMotivationalReminders() async {
     for (int i = 0; i < 5; i++) {
