@@ -4,7 +4,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Masar</title>
+  <title>مسار | نظّم يومك ودراستك في مكان واحد</title>
+  <meta name="description" content="مسار تطبيق يساعدك على تنظيم المهام والعادات والدراسة، ومتابعة تقدمك وكتابة ملخصات وملاحظات لكل درس. متاح مجانًا لأندرويد.">
   <link rel="icon" type="image/png" href="icon.png">
   <link rel="apple-touch-icon" href="icon.png">
   <meta name="theme-color" content="#006D77">
@@ -1658,6 +1659,12 @@
 .promise-section{display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:center;padding:clamp(24px,4vw,42px);border-radius:30px;background:#e5f0f2}.promise-quote{padding:22px;border-radius:22px;background:#fff;box-shadow:0 12px 28px -20px rgba(0,81,90,.35);font-size:1.1rem;font-weight:700;line-height:1.8}.promise-quote small{display:block;color:var(--accent);font-size:.72rem;margin-top:10px}.privacy-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.privacy-item{text-align:center;padding:20px 14px;border-radius:20px;background:rgba(255,255,255,.75);border:1px solid var(--divider)}.privacy-item b{display:block;margin:8px 0 4px;font-size:.9rem}.privacy-item p{font-size:.75rem;color:var(--ink-2)}.final-cta{padding:clamp(32px,6vw,64px);text-align:center;border-radius:34px;color:#fff;background:radial-gradient(circle at 15% 0,rgba(131,197,190,.18),transparent 35%),linear-gradient(145deg,#006d77,#003f46);box-shadow:0 22px 50px -28px rgba(0,81,90,.65)}.final-cta h2{font-size:clamp(1.7rem,4vw,2.6rem);margin:10px 0}.final-cta p{color:rgba(255,255,255,.78);max-width:38em;margin:0 auto 22px}.final-cta .btn{background:#fff;color:var(--accent);box-shadow:0 12px 24px -12px rgba(0,0,0,.4)}
 @media(max-width:760px){.value-strip{gap:4px;padding:14px 8px}.value-item{padding:6px 2px}.value-item span{font-size:.67rem}.feature-story,.promise-section{grid-template-columns:1fr}.story-visual{min-height:235px}.privacy-row{grid-template-columns:1fr}.feature-story{padding:24px}.feature-story p{font-size:.9rem}}@media(prefers-reduced-motion:reduce){.story-phone,.feature-story:hover .story-phone{transition:none;transform:none}}
 
+
+.site-nav{display:flex;align-items:center;gap:clamp(10px,2vw,24px);margin-inline:auto;font-size:.78rem;font-weight:600;color:var(--ink-2)}
+.site-nav a{text-decoration:none;transition:color .2s ease}.site-nav a:hover{color:var(--accent)}
+.top{position:sticky;top:12px;z-index:20;padding:10px 14px;border:1px solid rgba(169,201,202,.7);border-radius:20px;background:rgba(248,252,253,.82);backdrop-filter:blur(18px);box-shadow:0 8px 24px -20px rgba(0,81,90,.4)}
+@media(max-width:760px){.site-nav{display:none}.top{top:6px}}
+
 </style>
 </head>
 
@@ -1669,7 +1676,8 @@
         <img src="icon.png" alt="" width="48" height="48">
         <span>مسار</span>
       </a>
-      <a class="src" href="https://github.com/sifeemad123/Masar" target="_blank" rel="noopener">GitHub Repository</a>
+      <nav class="site-nav" aria-label="التنقل الرئيسي"><a href="#tasks">المهام</a><a href="#habits">العادات</a><a href="#study">الدراسة</a><a href="#updates">التحديثات</a><a href="#install">التثبيت</a></nav>
+      <a class="src" href="https://github.com/sifeemad123/Masar" target="_blank" rel="noopener">GitHub</a>
     </header>
 
     <section class="hero" id="top">
@@ -1851,10 +1859,10 @@
     <section class="value-strip reveal" aria-label="ملخص تجربة مسار">
       <div class="value-item"><b>مكان واحد</b><span>لمهامك وعاداتك ودراستك</span></div><div class="value-item"><b>تقدم واضح</b><span>تابع اللي أنجزته واللي باقي</span></div><div class="value-item"><b>على جهازك</b><span>بياناتك محفوظة محليًا</span></div>
     </section>
-    <section class="feature-story"><div><span class="story-tag">إدارة يومك</span><h2>خلّي كل مهمة ليها وقتها</h2><p>نظّم يومك من غير ما تفضل شايل كل حاجة في دماغك. أضف المهمة وحدد وقت بدايتها وموعدها النهائي، وسيب مسار يفكّرك في الوقت المناسب.</p><ul><li>تابع مهام النهارده والمهام القادمة والمتأخرة.</li><li>سجّل إنجازك وتابع تقدم يومك.</li><li>تفاعل مع التذكير مباشرة من الإشعار.</li></ul></div>
+    <section class="feature-story" id="tasks"><div><span class="story-tag">إدارة يومك</span><h2>خلّي كل مهمة ليها وقتها</h2><p>نظّم يومك من غير ما تفضل شايل كل حاجة في دماغك. أضف المهمة وحدد وقت بدايتها وموعدها النهائي، وسيب مسار يفكّرك في الوقت المناسب.</p><ul><li>تابع مهام النهارده والمهام القادمة والمتأخرة.</li><li>سجّل إنجازك وتابع تقدم يومك.</li><li>تفاعل مع التذكير مباشرة من الإشعار.</li></ul></div>
       <div class="story-visual"><div class="story-phone"><div class="story-phone-head"><b>اليوم</b><span>صباح الخير</span></div><div class="story-phone-hero"><b>إنجاز يومك</b><small>خلصت 2 من 3 مهام</small><div class="mini-progress"><i style="width:67%;background:#fff"></i></div></div><div class="story-task done"><i>✓</i><span>مراجعة الدرس</span><small>8:30 ص</small></div><div class="story-task done"><i>✓</i><span>حل الواجب</span><small>10:00 ص</small></div><div class="story-task"><i></i><span>قراءة 20 دقيقة</span><small>6:00 م</small></div></div></div>
     </section>
-    <section class="feature-story reverse"><div><span class="story-tag">بناء العادات</span><h2>الاستمرارية تبدأ بخطوة</h2><p>حوّل الحاجات اللي نفسك تلتزم بيها لعادات يومية واضحة، وسجّل إنجازك وشوف سلسلة التزامك بتكبر يوم بعد يوم.</p><ul><li>تابع إنجاز كل عادة وسلسلة الاستمرار.</li><li>اعرف أطول سلسلة وصلت لها.</li><li>حدد تذكير مناسب لكل عادة.</li></ul></div><div class="story-visual"><div style="display:grid;justify-items:center"><div class="habit-dial"><strong>72%</strong></div><div class="habit-bubbles"><span>✓</span><span>✓</span><span>✓</span><span>•</span><span>✓</span></div></div></div></section>
+    <section class="feature-story reverse" id="habits"><div><span class="story-tag">بناء العادات</span><h2>الاستمرارية تبدأ بخطوة</h2><p>حوّل الحاجات اللي نفسك تلتزم بيها لعادات يومية واضحة، وسجّل إنجازك وشوف سلسلة التزامك بتكبر يوم بعد يوم.</p><ul><li>تابع إنجاز كل عادة وسلسلة الاستمرار.</li><li>اعرف أطول سلسلة وصلت لها.</li><li>حدد تذكير مناسب لكل عادة.</li></ul></div><div class="story-visual"><div style="display:grid;justify-items:center"><div class="habit-dial"><strong>72%</strong></div><div class="habit-bubbles"><span>✓</span><span>✓</span><span>✓</span><span>•</span><span>✓</span></div></div></div></section>
 
     
 
@@ -1957,10 +1965,10 @@
     </section>
 
     
-    <section class="promise-section"><div class="sec-head"><span class="study-kicker">فكرة مسار</span><h2>مسار مش بس بينظّم يومك… بيفكّرك إنت بتسعى ليه.</h2><p>اتعمل عشان يساعدك توازن بين مسؤولياتك والحاجات اللي نفسك تعملها، وتبقى شايف تقدمك خطوة بخطوة من غير تعقيد.</p></div><div class="promise-quote">«مش لازم تخلص كل حاجة مرة واحدة… المهم تفضل ماشي في طريقك.»<small>مسار — خطوة بخطوة</small></div></section>
+    <section class="promise-section" id="about"><div class="sec-head"><span class="study-kicker">فكرة مسار</span><h2>مسار مش بس بينظّم يومك… بيفكّرك إنت بتسعى ليه.</h2><p>اتعمل عشان يساعدك توازن بين مسؤولياتك والحاجات اللي نفسك تعملها، وتبقى شايف تقدمك خطوة بخطوة من غير تعقيد.</p></div><div class="promise-quote">«مش لازم تخلص كل حاجة مرة واحدة… المهم تفضل ماشي في طريقك.»<small>مسار — خطوة بخطوة</small></div></section>
     <section><div class="sec-head"><h2>بياناتك مكانها جهازك</h2><p>تجربة بسيطة ومباشرة، من غير حسابات أو اعتماد على سيرفر خارجي.</p></div><div class="privacy-row"><article class="privacy-item"><span class="gicon">⌂</span><b>تخزين محلي</b><p>بياناتك محفوظة على جهازك.</p></article><article class="privacy-item"><span class="gicon">◈</span><b>من غير حساب</b><p>ابدأ استخدام مسار من غير تسجيل دخول.</p></article><article class="privacy-item"><span class="gicon">↗</span><b>متاح أوفلاين</b><p>استخدم الأدوات الأساسية من غير إنترنت.</p></article></div></section>
 
-<section class="new">
+<section class="new" id="updates">
       <div class="sec-head">
         <span class="ver">v1.1.0</span>
         <h2>أبرز المميزات والتحديثات</h2>
@@ -2066,7 +2074,7 @@
 
 <section class="final-cta"><span class="study-kicker" style="color:#a8d8d3">ابدأ من النهارده</span><h2>ابدأ طريقك مع مسار.</h2><p>نزّل التطبيق، رتّب أولوياتك، وابدأ بخطوة صغيرة تقرّبك من اللي نفسك توصله.</p><a class="btn" href="masar.apk" download="masar.apk">حمّل مسار مجانًا ↓</a></section>
 
-<section>
+<section id="install">
       <div class="sec-head">
         <h2>التثبيت في أربع خطوات</h2>
         <p>التطبيق بيتثبت من ملف APK مباشرة، من غير Google Play. لو عندك نسخة قديمة، ثبّت الجديدة فوقها وبياناتك هتفضل زي ما هي.</p>
