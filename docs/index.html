@@ -1665,6 +1665,33 @@
 .top{position:sticky;top:12px;z-index:20;padding:10px 14px;border:1px solid rgba(169,201,202,.7);border-radius:20px;background:rgba(248,252,253,.82);backdrop-filter:blur(18px);box-shadow:0 8px 24px -20px rgba(0,81,90,.4)}
 @media(max-width:760px){.site-nav{display:none}.top{top:6px}}
 
+
+/* Source-faithful app screen previews */
+.app-gallery{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}
+.app-screen{min-width:0;padding:18px;border:1px solid var(--border);border-radius:28px;background:rgba(255,255,255,.78);box-shadow:0 18px 38px -28px rgba(0,55,61,.34);overflow:hidden;transform:translateY(0);transition:transform .55s cubic-bezier(.2,.8,.2,1),box-shadow .55s}
+.app-screen:hover{transform:translateY(-7px);box-shadow:0 26px 48px -28px rgba(0,55,61,.4)}
+.app-screen.wide{grid-column:1/-1;display:grid;grid-template-columns:.8fr 1.2fr;gap:20px;align-items:center}
+.screen-label{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}.screen-label b{font-size:.94rem}.screen-label span{font-size:.68rem;color:var(--ink-3)}
+.screen-canvas{min-height:300px;padding:15px;border-radius:21px;background:linear-gradient(180deg,#f8fcfd,#e8f3f5);border:1px solid #d2e2e4;overflow:hidden;position:relative}
+.screen-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:13px;color:var(--ink);font-size:.8rem;font-weight:800}
+.screen-muted{color:var(--ink-3);font-size:.62rem;font-weight:500}
+.screen-hero{border-radius:20px;padding:16px;background:linear-gradient(135deg,#00515a,#006d77 65%,#187f83);color:#fff;position:relative;overflow:hidden;box-shadow:0 12px 24px -17px #00515a}
+.screen-hero:after{content:"";position:absolute;width:130px;height:130px;border:18px solid rgba(255,255,255,.07);border-radius:50%;inset:-52px auto auto -35px}
+.screen-hero b{font-size:1rem;position:relative;z-index:1}.screen-hero p{font-size:.68rem;color:#d8efed;margin-top:5px;position:relative;z-index:1}
+.screen-meter{height:8px;border-radius:20px;background:rgba(255,255,255,.22);margin-top:13px;overflow:hidden}.screen-meter i{height:100%;display:block;border-radius:20px;background:#a8d8d3}
+.screen-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:11px}.screen-stat{padding:10px 5px;text-align:center;background:#fff;border:1px solid #dce9ea;border-radius:14px}.screen-stat b{display:block;font-size:1rem;color:var(--ink)}.screen-stat small{font-size:.59rem;color:var(--ink-2)}
+.screen-section-title{display:flex;align-items:center;justify-content:space-between;margin:15px 0 8px;font-size:.75rem;font-weight:800}.screen-section-title small{font-size:.6rem;color:var(--accent)}
+.screen-row{display:flex;align-items:center;gap:9px;padding:10px;margin-top:7px;background:#fff;border:1px solid #dce9ea;border-radius:13px;font-size:.66rem}.screen-row .dot{width:25px;height:25px;display:grid;place-items:center;flex:none;border-radius:9px;background:#e4f1f1;color:#006d77;font-size:.75rem}.screen-row .row-copy{flex:1;min-width:0}.screen-row b{display:block;font-size:.67rem}.screen-row small{display:block;color:var(--ink-3);font-size:.58rem;margin-top:2px}.screen-row .row-time{color:var(--ink-3);font-size:.58rem;white-space:nowrap}
+.screen-filter{display:flex;gap:5px;padding:5px;border:1px solid #dce9ea;border-radius:30px;background:#fff;margin:12px 0}.screen-filter span{flex:1;text-align:center;padding:7px 2px;border-radius:22px;font-size:.58rem;color:var(--ink-2)}.screen-filter span.active{background:#006d77;color:white;box-shadow:0 4px 10px #006d7730}
+.screen-habit{display:flex;align-items:center;gap:10px;padding:11px;background:#fff;border:1px solid #dce9ea;border-radius:14px;margin-top:8px}.screen-habit .habit-icon{width:34px;height:34px;border-radius:12px;background:#e3f1ef;color:#006d77;display:grid;place-items:center}.screen-habit b{display:block;font-size:.67rem}.screen-habit small{display:block;color:var(--ink-3);font-size:.58rem}.screen-habit .streak{margin-inline-start:auto;color:#c87558;font-size:.65rem;font-weight:800}
+.screen-book{padding:15px;border-radius:17px;background:linear-gradient(135deg,#00515a,#087b80);color:white}.screen-book small{font-size:.56rem;letter-spacing:2px;color:#b9e2de}.screen-book b{display:block;font-size:1.1rem;margin-top:8px}.screen-book p{font-size:.65rem;color:#d9eeee;margin-top:3px}
+.screen-paper{margin-top:10px;padding:13px;border-radius:15px;background:#fff;border:1px solid #dce9ea}.screen-paper b{font-size:.69rem}.screen-paper p{font-size:.62rem;color:var(--ink-2);line-height:1.8;margin-top:8px}
+.screen-note{margin-top:9px;padding:13px;border-radius:15px;background:#eaf5f6;border:1px solid #d3e6e7}.screen-note b{display:block;font-size:.67rem}.screen-note p{font-size:.6rem;color:var(--ink-2);line-height:1.8;margin-top:5px}
+.screen-description h3{font-size:1.12rem;margin:0 0 8px}.screen-description p{font-size:.82rem;color:var(--ink-2);line-height:1.9}.screen-description ul{padding-right:18px;margin:12px 0 0;color:var(--ink-2);font-size:.75rem;line-height:2}
+.screen-bottom-nav{display:flex;justify-content:space-around;margin-top:12px;padding:10px 5px;border-radius:16px;background:#fff;border:1px solid #dce9ea;color:#789294;font-size:.55rem}.screen-bottom-nav b{color:#006d77}
+@media(max-width:760px){.app-gallery{grid-template-columns:1fr;gap:16px}.app-screen.wide{grid-column:auto;grid-template-columns:1fr}.screen-canvas{min-height:0}.screen-description h3{font-size:1rem}}
+@media(prefers-reduced-motion:reduce){.app-screen,.app-screen:hover{transition:none;transform:none}}
+
 </style>
 </head>
 
@@ -1867,44 +1894,72 @@
     
 
 
-    <section class="study-showcase" id="study">
+    
+    <section class="study-showcase" id="screens">
       <div class="sec-head">
-        <span class="study-kicker">مساحة الدراسة في مسار</span>
-        <h2>من أول مادة لحد آخر ملحوظة… كل حاجة مترتبة</h2>
-        <p>تابع تقدمك، اعرف الدرس اللي جاي، واحتفظ بملخصاتك وملاحظاتك في دفتر كل درس.</p>
+        <span class="study-kicker">من داخل التطبيق</span>
+        <h2>دي شاشات مسار… زي ما بتشتغل فعلًا</h2>
+        <p>استكشف تجربة التطبيق من تنظيم يومك ومهامك وعاداتك، لحد المواد ودفتر كل درس.</p>
       </div>
-      <div class="study-panels">
-        <article class="study-panel" aria-label="معاينة شاشة المواد">
-          <div class="study-top"><span class="study-icon">▤</span><div class="study-title"><b>موادي</b><small>كل موادك الدراسية في مكان واحد</small></div></div>
-          <div class="study-hero"><b>عندك 12 مادة</b><p>خلصت 12 من 63 درس</p><div class="study-chips"><span>12 مادة</span><span>63 درس</span><span>12 خلصت</span></div></div>
-          <div class="study-search"><span>ابحث عن مادة أو مدرس...</span><span>⌕</span></div>
-          <div class="study-subhead"><span>قائمة المواد</span><small>12 مادة</small></div>
-          <div class="study-subject"><span class="study-book">▤</span><div class="study-subject-copy"><b>Physics</b><small>منهج الفيزياء</small><i></i></div><span class="study-pill">8 دروس</span></div>
-          <div class="study-subject"><span class="study-book">▤</span><div class="study-subject-copy"><b>دراسات</b><small>مادة الدراسات</small><i></i></div><span class="study-pill">10 دروس</span></div>
-          <div class="study-panel-foot"><span>بحث فوري</span><span>تنظيم المواد ←</span></div>
+      <div class="app-gallery">
+        <article class="app-screen">
+          <div class="screen-label"><b>اليوم — نظرة سريعة</b><span>01 / الرئيسية</span></div>
+          <div class="screen-canvas">
+            <div class="screen-header"><span>الثلاثاء، 24 نوفمبر</span><span>☼</span></div>
+            <div class="screen-hero"><b>صباح الخير</b><p>ابدأ يومك بخطوة جديدة</p><div style="display:flex;justify-content:space-between;align-items:center;margin-top:13px"><b>خلصت 2 من 3</b><strong>67%</strong></div><div class="screen-meter"><i style="width:67%"></i></div></div>
+            <div class="screen-section-title"><span>مهامك النهاردة</span><small>3 مهام</small></div>
+            <div class="screen-row"><span class="dot">✓</span><span class="row-copy"><b>مراجعة الدرس</b><small>مكتملة</small></span><span class="row-time">8:30 ص</span></div>
+            <div class="screen-row"><span class="dot">✓</span><span class="row-copy"><b>حل الواجب</b><small>مكتملة</small></span><span class="row-time">10:00 ص</span></div>
+            <div class="screen-row"><span class="dot">○</span><span class="row-copy"><b>قراءة 20 دقيقة</b><small>لسه متبدأتش</small></span><span class="row-time">6:00 م</span></div>
+            <div class="screen-bottom-nav"><span>اليوم</span><span>المهام</span><span>العادات</span><b>المواد</b><span>الإعدادات</span></div>
+          </div>
         </article>
-        <article class="study-panel" aria-label="معاينة تفاصيل المادة والدروس">
-          <div class="study-top"><span class="study-icon">▤</span><div class="study-title"><b>Physics</b><small>منهج الفيزياء</small></div></div>
-          <div class="study-hero"><b>Physics <span style="float:left">63%</span></b><p>تقدمك في المادة</p><div class="study-chips"><span>إنجاز المادة</span><span>متابعة التقدم</span></div></div>
-          <div class="study-stats"><div><b>8</b><small>الدروس</small></div><div><b>5</b><small>خلصت</small></div><div><b>3</b><small>باقي</small></div></div>
-          <div class="study-next">◈ <span>كمّل رحلتك • الدرس 6<br><b>Mutual and Self Induction</b></span></div>
-          <div class="study-subhead"><span>الدروس</span><small>الكل · الباقي · المخلصة</small></div>
-          <div class="study-lesson done"><span class="study-check">✓</span><div><b>Meaning of magnetic field</b><small>3 ملاحظات</small></div></div>
-          <div class="study-lesson done"><span class="study-check">✓</span><div><b>Magnetic field in the current</b><small>4 ملاحظات</small></div></div>
-          <div class="study-lesson"><span class="study-check" style="background:#dcebed;color:var(--accent)">•</span><div><b>Magnetic force and torque</b><small>لسه متبدأش</small></div></div>
-          <div class="study-panel-foot"><span>تقدم المادة</span><span>الدروس ←</span></div>
+        <article class="app-screen">
+          <div class="screen-label"><b>إدارة المهام</b><span>02 / المهام</span></div>
+          <div class="screen-canvas">
+            <div class="screen-header"><span style="font-size:1.05rem">مهامي</span><span class="screen-muted">رتّب أولوياتك</span></div>
+            <div class="screen-hero"><b>نسبة إنجازك الكلية</b><p>تابع اللي خلصته واللي لسه عليك</p><div class="screen-stats"><div class="screen-stat"><b>12</b><small>كل المهام</small></div><div class="screen-stat"><b>8</b><small>مكتملة</small></div><div class="screen-stat"><b>4</b><small>متبقية</small></div></div></div>
+            <div class="screen-filter"><span class="active">الكل</span><span>النهاردة</span><span>متأخرة</span><span>قادمة</span></div>
+            <div class="screen-section-title"><span>مهام النهاردة</span><small>2</small></div>
+            <div class="screen-row"><span class="dot">✓</span><span class="row-copy"><b>مذاكرة Spring</b><small>بداية 4:00 م</small></span><span class="row-time">مكتملة</span></div>
+            <div class="screen-row"><span class="dot">○</span><span class="row-copy"><b>حل تدريبات Angular</b><small>موعد التسليم 8:00 م</small></span><span class="row-time">8:00 م</span></div>
+            <div class="screen-section-title"><span>المهام المتأخرة</span><small>متابعة</small></div>
+            <div class="screen-row"><span class="dot">!</span><span class="row-copy"><b>مراجعة الدرس السابق</b><small>مهمة محتاجة اهتمامك</small></span></div>
+          </div>
         </article>
-        <article class="study-panel" aria-label="معاينة دفتر الدرس والملخص والملاحظات">
-          <div class="study-top"><span class="study-icon">▤</span><div class="study-title"><b>دفتر الدرس</b><small>ملاحظاتك وملخصاتك في مكان واحد</small></div></div>
-          <div class="study-notebook"><small>STUDY NOTES</small><b>Lenz’s Rule</b><p>What is Lenz’s Rule and How to Calculate it</p><div class="study-chips"><span>✓ مكتمل</span><span>1 ملخص</span><span>1 ملاحظة</span></div></div>
-          <div class="study-label"><b>ملخص الدرس</b><span>للمراجعة ▤</span></div>
-          <div class="study-paper">في الدرس اللي فات عرفنا إن الـ Change in magnetic flux بيولد حاجة اسمها Induced Current… وده بيخلينا نعرف اتجاهه باستخدام Lenz’s Law.</div>
-          <div class="study-label"><b>الملاحظات</b><span>إضافة +</span></div>
-          <div class="study-note"><b>What is Lenz’s Law Depends on</b><p>اتجاه الحركة واتجاه المجال المغناطيسي بيساعدوك تحدد اتجاه التيار المستحث.</p></div>
-          <div class="study-panel-foot"><span>مشاركة الملاحظة</span><span>افتح الدفتر ←</span></div>
+        <article class="app-screen">
+          <div class="screen-label"><b>بناء العادات</b><span>03 / العادات</span></div>
+          <div class="screen-canvas">
+            <div class="screen-header"><span style="font-size:1.05rem">عاداتي</span><span class="screen-muted">خطواتك اليومية</span></div>
+            <div class="screen-hero"><b>استمر على خطوتك</b><p>كل يوم بتقرب أكتر من هدفك</p><div class="screen-stats"><div class="screen-stat"><b>4</b><small>عادات</small></div><div class="screen-stat"><b>3</b><small>خلصت</small></div><div class="screen-stat"><b>12</b><small>أفضل سلسلة</small></div></div></div>
+            <div class="screen-section-title"><span>عاداتك اليومية</span><small>تقدم النهاردة</small></div>
+            <div class="screen-habit"><span class="habit-icon">✓</span><span><b>قراءة يومية</b><small>تم إنجاز العادة</small></span><span class="streak">🔥 7</span></div>
+            <div class="screen-habit"><span class="habit-icon">◷</span><span><b>مذاكرة إنجليزي</b><small>لسه مستمرة</small></span><span class="streak">🔥 4</span></div>
+            <div class="screen-habit"><span class="habit-icon">✓</span><span><b>مراجعة القرآن</b><small>تم إنجاز العادة</small></span><span class="streak">🔥 12</span></div>
+          </div>
+        </article>
+        <article class="app-screen">
+          <div class="screen-label"><b>المواد الدراسية</b><span>04 / موادي</span></div>
+          <div class="screen-canvas">
+            <div class="screen-header"><span style="font-size:1.05rem">موادي</span><span class="screen-muted">كل موادك في مكان واحد</span></div>
+            <div class="screen-hero"><b>عندك 12 مادة</b><p>خلصت 12 من 63 درس</p><div class="screen-stats"><div class="screen-stat"><b>12</b><small>مواد</small></div><div class="screen-stat"><b>63</b><small>دروس</small></div><div class="screen-stat"><b>12</b><small>خلصت</small></div></div></div>
+            <div class="screen-row"><span class="dot">⌕</span><span class="row-copy"><b>ابحث عن مادة أو مدرس...</b></span></div>
+            <div class="screen-section-title"><span>قائمة المواد</span><small>12 مادة</small></div>
+            <div class="screen-row"><span class="dot">▤</span><span class="row-copy"><b>Physics</b><small>منهج الفيزياء · 8 دروس</small></span></div>
+            <div class="screen-row"><span class="dot">▤</span><span class="row-copy"><b>دراسات</b><small>مادة الدراسات · 10 دروس</small></span></div>
+            <div class="screen-row"><span class="dot">▤</span><span class="row-copy"><b>عربي</b><small>اللغة العربية</small></span></div>
+          </div>
+        </article>
+        <article class="app-screen wide">
+          <div class="screen-description"><span class="story-tag">داخل كل مادة</span><h3>رحلة الدروس بتقدم واضح</h3><p>صفحة المادة بتعرض نسبة الإنجاز، عدد الدروس المكتملة والمتبقية، وتقترح عليك تكمل من الدرس التالي. وتقدر تفلتر الدروس حسب حالتها.</p><ul><li>كارت المادة ونسبة الإنجاز.</li><li>إحصائيات الدروس: الكل، خلصت، والباقي.</li><li>زر استكمال رحلتك وآخر درس مطلوب.</li><li>علامة إنجاز لكل درس.</li></ul></div>
+          <div class="screen-canvas"><div class="screen-header"><span style="font-size:1rem">Physics</span><span class="screen-muted">منهج الفيزياء</span></div><div class="screen-hero"><div style="display:flex;justify-content:space-between"><b>Physics</b><strong>63%</strong></div><p>إنجاز المادة</p><div class="screen-meter"><i style="width:63%"></i></div></div><div class="screen-stats"><div class="screen-stat"><b>8</b><small>الدروس</small></div><div class="screen-stat"><b>5</b><small>خلصت</small></div><div class="screen-stat"><b>3</b><small>باقي</small></div></div><div class="screen-hero" style="margin-top:10px;padding:12px"><small style="color:#cce9e6">كمّل رحلتك • الدرس 6</small><b style="font-size:.8rem">Mutual and Self Induction</b></div><div class="screen-filter"><span class="active">الكل 8</span><span>الباقي 3</span><span>المخلصة 5</span></div><div class="screen-row"><span class="dot">✓</span><span class="row-copy"><b>Meaning of magnetic field</b><small>3 ملاحظات</small></span></div><div class="screen-row"><span class="dot">✓</span><span class="row-copy"><b>Magnetic field in the current magnets</b><small>4 ملاحظات</small></span></div><div class="screen-row"><span class="dot">○</span><span class="row-copy"><b>Magnetic force and torque</b><small>لسه متبدأش</small></span></div></div>
+        </article>
+        <article class="app-screen wide">
+          <div class="screen-description"><span class="story-tag">دفتر الدرس</span><h3>الملخص حاجة… والملاحظات حاجة تانية</h3><p>كل درس له دفتر مستقل. تقدر تضيف ملخصًا سريعًا للمراجعة، وتحتفظ بملاحظاتك وتفاصيلك المهمة بشكل منفصل.</p><ul><li>حالة الدرس وعدد الملاحظات.</li><li>ملخص درس مستقل عن الملاحظات.</li><li>إضافة وتعديل وحذف ومشاركة الملاحظات.</li><li>ألوان متعددة لتمييز الملاحظات.</li></ul></div>
+          <div class="screen-canvas"><div class="screen-header"><span style="font-size:.95rem">دفتر الدرس</span><span class="screen-muted">ملاحظاتك وملخصاتك</span></div><div class="screen-book"><small>STUDY NOTES</small><b>Lenz’s Rule</b><p>What is Lenz’s Rule and How to Calculate it</p><div class="screen-meter"><i style="width:100%"></i></div><small>مكتمل · ملخص متوفر · 1 ملاحظة</small></div><div class="screen-section-title"><span>ملخص الدرس</span><small>أهم النقاط للمراجعة السريعة</small></div><div class="screen-paper"><b>محتوى الملخص</b><p>في الدرس اللي فات عرفنا إن الـ Change in magnetic flux بيولد حاجة اسمها Induced Current… وده بيخلينا نعرف اتجاهه باستخدام Lenz’s Law.</p></div><div class="screen-section-title"><span>الملاحظات</span><small>أفكارك وتفاصيلك المهمة</small></div><div class="screen-note"><b>What is Lenz’s Law Depends on</b><p>اتجاه الحركة واتجاه المجال المغناطيسي بيساعدوك تحدد اتجاه التيار المستحث.</p></div></div>
         </article>
       </div>
-      <p class="study-caption"><b>منظومة مذاكرة واحدة</b> — المادة، الدرس، الملخص، والملاحظات مترابطين.</p>
+      <p class="study-caption"><b>تفاصيل من بنية التطبيق الفعلية</b> — الواجهات مبنية على الشاشات ومكوناتها في كود Flutter، وليست لقطات شاشة حرفية.</p>
     </section>
 
     <section>
@@ -2160,7 +2215,7 @@
       mark($('.hero .chip, .hero h1, .hero .lead, .hero .cta, .hero .pills'), 0.09);
       mark($('.sec-head, .new, .note, .foot'), 0);
       mark($('.new-item'), 0.07, 3);
-      mark($('.study-panel'), 0.12, 3);
+      mark($('.study-panel, .app-screen'), 0.12, 3);
       mark($('.feature-story, .value-strip, .promise-section, .privacy-item, .final-cta'), 0.1, 3);
       mark($('.grid .card'), 0.08, 4);
       mark($('.steps .card'), 0.09, 4);
