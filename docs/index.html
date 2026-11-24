@@ -1612,7 +1612,46 @@
       }
     }
 
-  </style>
+  
+/* Study journey showcase */
+.study-showcase{display:grid;gap:28px;position:relative}
+.study-showcase .sec-head{margin:0}
+.study-kicker{display:inline-flex;align-items:center;gap:9px;color:var(--accent);font-size:.82rem;font-weight:700}
+.study-kicker:before{content:"";width:8px;height:8px;border-radius:50%;background:var(--warm);box-shadow:0 0 0 6px rgba(226,149,120,.13)}
+.study-panels{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;align-items:center;perspective:1200px}
+.study-panel{position:relative;min-width:0;padding:14px;border:1px solid var(--border);border-radius:29px;background:linear-gradient(155deg,#fff,rgba(229,240,242,.9));box-shadow:0 24px 55px -32px rgba(0,81,90,.5),inset 0 1px #fff;overflow:hidden;transition:transform .6s cubic-bezier(.2,.8,.2,1),box-shadow .5s}
+.study-panel:nth-child(1){transform:rotateY(6deg) translateY(15px)}
+.study-panel:nth-child(2){transform:translateY(-5px) scale(1.035);z-index:2}
+.study-panel:nth-child(3){transform:rotateY(-6deg) translateY(15px)}
+.study-panel:hover{transform:translateY(-9px) rotateY(0) scale(1.025);z-index:3;box-shadow:0 32px 65px -32px rgba(0,81,90,.58)}
+.study-panel:before{content:"";position:absolute;width:180px;height:180px;right:-70px;top:-115px;border-radius:50%;background:rgba(131,197,190,.18)}
+.study-top{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 5px 13px}
+.study-icon{width:35px;height:35px;border-radius:12px;display:grid;place-items:center;color:white;background:linear-gradient(140deg,var(--accent),var(--accent-dark));font-size:18px}
+.study-title{text-align:right}.study-title b{display:block;font-size:.94rem}.study-title small{font-size:.65rem;color:var(--ink-3)}
+.study-hero{position:relative;overflow:hidden;color:white;border-radius:20px;padding:18px 15px;background:radial-gradient(circle at 100% 0,rgba(255,255,255,.14) 0 70px,transparent 71px),linear-gradient(135deg,#087e83,#00515a);box-shadow:0 12px 24px -15px rgba(0,81,90,.65)}
+.study-hero b{display:block;font-size:1.12rem}.study-hero p{font-size:.7rem;color:rgba(255,255,255,.8);margin-top:3px}
+.study-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}.study-chips span{font-size:.59rem;padding:4px 8px;border-radius:20px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.15)}
+.study-search{display:flex;justify-content:space-between;margin:12px 0;padding:8px 10px;border:1px solid var(--border);border-radius:13px;background:#fff;color:var(--ink-3);font-size:.66rem}
+.study-subhead{display:flex;justify-content:space-between;margin:12px 2px 7px;font-size:.77rem;font-weight:800}.study-subhead small{color:var(--accent);font-size:.62rem}
+.study-subject{display:flex;align-items:center;gap:9px;padding:10px;margin-top:7px;border:1px solid var(--divider);border-radius:16px;background:#fff}
+.study-book{width:38px;height:38px;flex:none;border-radius:13px;display:grid;place-items:center;color:#fff;background:linear-gradient(145deg,var(--accent),var(--accent-dark));font-size:18px}
+.study-subject-copy{flex:1;min-width:0;text-align:right}.study-subject-copy b{display:block;font-size:.72rem}.study-subject-copy small{font-size:.6rem;color:var(--ink-2)}
+.study-subject-copy i{display:block;height:5px;border-radius:8px;background:#dcebed;margin-top:6px;overflow:hidden}.study-subject-copy i:after{content:"";display:block;width:63%;height:100%;background:linear-gradient(90deg,var(--accent-light),var(--accent));border-radius:8px}
+.study-pill{font-size:.58rem;color:var(--accent);background:rgba(0,109,119,.09);border-radius:20px;padding:4px 7px;white-space:nowrap}
+.study-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:12px 0}.study-stats div{text-align:center;border:1px solid var(--divider);border-radius:13px;background:#fff;padding:9px 3px}.study-stats b{display:block;font-size:1.05rem}.study-stats small{font-size:.58rem;color:var(--ink-2)}
+.study-next{display:flex;align-items:center;gap:8px;padding:10px;color:white;border-radius:15px;background:linear-gradient(130deg,var(--accent),var(--accent-dark));font-size:.63rem;font-weight:700;margin-bottom:12px}
+.study-lesson{display:flex;align-items:center;gap:8px;padding:10px 8px;margin-top:7px;border:1px solid var(--divider);border-radius:14px;background:#fff}.study-check{width:23px;height:23px;flex:none;border-radius:50%;display:grid;place-items:center;color:#fff;background:var(--success)}.study-lesson b{display:block;font-size:.64rem}.study-lesson small{font-size:.57rem;color:var(--ink-2)}.study-lesson.done b{text-decoration:line-through;color:var(--ink-3)}
+.study-notebook{min-height:155px;display:flex;flex-direction:column;justify-content:space-between;padding:17px;color:#fff;border-radius:20px;background:radial-gradient(circle at 0 0,rgba(255,255,255,.13) 0 65px,transparent 66px),linear-gradient(145deg,#087e83,#00515a);box-shadow:0 12px 24px -15px rgba(0,81,90,.65)}
+.study-notebook small{font-size:.58rem;letter-spacing:.13em;color:rgba(255,255,255,.72)}.study-notebook b{font-size:1.13rem}.study-notebook p{font-size:.66rem;color:rgba(255,255,255,.8)}
+.study-label{display:flex;justify-content:space-between;align-items:center;margin:13px 1px 7px;font-size:.72rem;font-weight:800}.study-label span{font-size:.58rem;color:var(--accent);background:rgba(0,109,119,.09);padding:4px 8px;border-radius:20px}
+.study-paper{padding:12px;border:1px solid var(--divider);border-radius:16px;background:#f0f8f9;text-align:right;color:var(--ink-2);font-size:.65rem;line-height:1.9}
+.study-note{margin-top:9px;padding:12px;border:1px solid var(--divider);border-radius:16px;background:#fff;text-align:right}.study-note b{font-size:.68rem}.study-note p{margin-top:5px;font-size:.61rem;color:var(--ink-2)}
+.study-panel-foot{display:flex;justify-content:space-between;padding:10px 4px 1px;color:var(--ink-3);font-size:.59rem}
+.study-caption{text-align:center;color:var(--ink-2);font-size:.83rem}.study-caption b{color:var(--accent)}
+@media(max-width:760px){.study-panels{grid-template-columns:1fr;max-width:440px;width:100%;margin:auto;gap:20px}.study-panel:nth-child(1),.study-panel:nth-child(2),.study-panel:nth-child(3){transform:none}.study-panel:hover{transform:translateY(-5px)}}
+@media(prefers-reduced-motion:reduce){.study-panel,.study-panel:hover{transition:none;transform:none}}
+
+</style>
 </head>
 
 <body>
@@ -1629,8 +1668,8 @@
     <section class="hero" id="top">
       <div>
         <span class="chip">تطبيق أندرويد <b>v1.1.0</b></span>
-        <h1>نظّم يومك في مكان واحد وهادي</h1>
-        <p class="lead">مسار هو رفيقك اليومي عشان تنظم حياتك.. تاسكاتك، عاداتك، ومذاكرتك في مكان واحد بسيط، وبشكل جديد وحركة أسلس</p>
+        <h1>خلّي يومك ودراستك أوضح… <span style="color:var(--accent)">في مسار واحد</span></h1>
+        <p class="lead">رتّب مهامك، تابع عاداتك، ونظّم مذاكرتك من المواد والدروس لحد ملخصاتك وملاحظاتك — كل ده في تجربة واحدة بسيطة، وبياناتك محفوظة على جهازك.</p>
         <div class="cta">
           <!-- masar.apk must sit in the same folder as this file. Same-origin is what makes `download` work. -->
           <a class="btn" href="masar.apk" download="masar.apk">
@@ -1905,6 +1944,47 @@
       </div>
     </section>
 
+
+    <section class="study-showcase" id="study">
+      <div class="sec-head">
+        <span class="study-kicker">مساحة الدراسة في مسار</span>
+        <h2>من أول مادة لحد آخر ملحوظة… كل حاجة مترتبة</h2>
+        <p>تابع تقدمك، اعرف الدرس اللي جاي، واحتفظ بملخصاتك وملاحظاتك في دفتر كل درس.</p>
+      </div>
+      <div class="study-panels">
+        <article class="study-panel" aria-label="معاينة شاشة المواد">
+          <div class="study-top"><span class="study-icon">▤</span><div class="study-title"><b>موادي</b><small>كل موادك الدراسية في مكان واحد</small></div></div>
+          <div class="study-hero"><b>عندك 12 مادة</b><p>خلصت 12 من 63 درس</p><div class="study-chips"><span>12 مادة</span><span>63 درس</span><span>12 خلصت</span></div></div>
+          <div class="study-search"><span>ابحث عن مادة أو مدرس...</span><span>⌕</span></div>
+          <div class="study-subhead"><span>قائمة المواد</span><small>12 مادة</small></div>
+          <div class="study-subject"><span class="study-book">▤</span><div class="study-subject-copy"><b>Physics</b><small>منهج الفيزياء</small><i></i></div><span class="study-pill">8 دروس</span></div>
+          <div class="study-subject"><span class="study-book">▤</span><div class="study-subject-copy"><b>دراسات</b><small>مادة الدراسات</small><i></i></div><span class="study-pill">10 دروس</span></div>
+          <div class="study-panel-foot"><span>بحث فوري</span><span>تنظيم المواد ←</span></div>
+        </article>
+        <article class="study-panel" aria-label="معاينة تفاصيل المادة والدروس">
+          <div class="study-top"><span class="study-icon">▤</span><div class="study-title"><b>Physics</b><small>منهج الفيزياء</small></div></div>
+          <div class="study-hero"><b>Physics <span style="float:left">63%</span></b><p>تقدمك في المادة</p><div class="study-chips"><span>إنجاز المادة</span><span>متابعة التقدم</span></div></div>
+          <div class="study-stats"><div><b>8</b><small>الدروس</small></div><div><b>5</b><small>خلصت</small></div><div><b>3</b><small>باقي</small></div></div>
+          <div class="study-next">◈ <span>كمّل رحلتك • الدرس 6<br><b>Mutual and Self Induction</b></span></div>
+          <div class="study-subhead"><span>الدروس</span><small>الكل · الباقي · المخلصة</small></div>
+          <div class="study-lesson done"><span class="study-check">✓</span><div><b>Meaning of magnetic field</b><small>3 ملاحظات</small></div></div>
+          <div class="study-lesson done"><span class="study-check">✓</span><div><b>Magnetic field in the current</b><small>4 ملاحظات</small></div></div>
+          <div class="study-lesson"><span class="study-check" style="background:#dcebed;color:var(--accent)">•</span><div><b>Magnetic force and torque</b><small>لسه متبدأش</small></div></div>
+          <div class="study-panel-foot"><span>تقدم المادة</span><span>الدروس ←</span></div>
+        </article>
+        <article class="study-panel" aria-label="معاينة دفتر الدرس والملخص والملاحظات">
+          <div class="study-top"><span class="study-icon">▤</span><div class="study-title"><b>دفتر الدرس</b><small>ملاحظاتك وملخصاتك في مكان واحد</small></div></div>
+          <div class="study-notebook"><small>STUDY NOTES</small><b>Lenz’s Rule</b><p>What is Lenz’s Rule and How to Calculate it</p><div class="study-chips"><span>✓ مكتمل</span><span>1 ملخص</span><span>1 ملاحظة</span></div></div>
+          <div class="study-label"><b>ملخص الدرس</b><span>للمراجعة ▤</span></div>
+          <div class="study-paper">في الدرس اللي فات عرفنا إن الـ Change in magnetic flux بيولد حاجة اسمها Induced Current… وده بيخلينا نعرف اتجاهه باستخدام Lenz’s Law.</div>
+          <div class="study-label"><b>الملاحظات</b><span>إضافة +</span></div>
+          <div class="study-note"><b>What is Lenz’s Law Depends on</b><p>اتجاه الحركة واتجاه المجال المغناطيسي بيساعدوك تحدد اتجاه التيار المستحث.</p></div>
+          <div class="study-panel-foot"><span>مشاركة الملاحظة</span><span>افتح الدفتر ←</span></div>
+        </article>
+      </div>
+      <p class="study-caption"><b>منظومة مذاكرة واحدة</b> — المادة، الدرس، الملخص، والملاحظات مترابطين.</p>
+    </section>
+
     <section>
       <div class="sec-head">
         <h2>كل اللي محتاجه ليومك</h2>
@@ -2048,6 +2128,7 @@
       mark($('.hero .chip, .hero h1, .hero .lead, .hero .cta, .hero .pills'), 0.09);
       mark($('.sec-head, .new, .note, .foot'), 0);
       mark($('.new-item'), 0.07, 3);
+      mark($('.study-panel'), 0.12, 3);
       mark($('.grid .card'), 0.08, 4);
       mark($('.steps .card'), 0.09, 4);
 
